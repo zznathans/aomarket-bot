@@ -8,6 +8,7 @@ on:
   # workflow). There's no "latest floating on main" image.
   pull_request:
     paths:
+      - .github/workflows/**
       - Dockerfile
       - .dockerignore
       - docker-entrypoint.sh
