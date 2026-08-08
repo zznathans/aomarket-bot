@@ -31,10 +31,8 @@ class Orders:
 
 
 class GmiClient:
-    """Wrapper around the GMI live-order API (default https://gmi.nadybot.org),
-    matching Market.php::fetch_orders()'s GET {ApiUrl}/v1.0/aoid/{aoid} contract.
-    Returns None on any error or malformed response, mirroring the PHP
-    original's "return false" behavior rather than raising.
+    """Wrapper around the GMI live-order API: GET {ApiUrl}/v1.0/aoid/{aoid}.
+    Returns None on any error or malformed response rather than raising.
     """
 
     def __init__(self, base_url: str, http_client: httpx.AsyncClient | None = None):

@@ -1,9 +1,8 @@
 """ao-stonks.com "top traded items" HTML scraper.
 
-Ported from Market.php::sync_top_traded_items() (Market.php:1705-1799). No
-JSON API exists for this ranking, so it's regex-scraped from the rendered
-item list -- fragile by nature (see the module-level warning in the PHP
-original). Kept isolated so it's easily swappable/mockable.
+No JSON API exists for this ranking, so it's regex-scraped from the
+rendered item list -- fragile by nature. Kept isolated so it's easily
+swappable/mockable.
 """
 
 import re

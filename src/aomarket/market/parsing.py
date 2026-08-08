@@ -1,5 +1,5 @@
-"""Credit/QL shorthand parsing, ported from Market.php:1322-1407
-(format_credits/parse_credits/parse_ql/parse_range)."""
+"""Credit/QL shorthand parsing (format_credits/parse_credits/parse_ql/
+parse_range)."""
 
 import re
 from collections.abc import Callable

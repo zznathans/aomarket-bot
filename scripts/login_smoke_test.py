@@ -5,10 +5,9 @@ LOGIN_SELECT -> LOGIN_OK). No game-side assertions beyond that.
 Usage:
     AO_LOGIN=... AO_PASSWORD=... AO_CHARACTER=... python3 scripts/login_smoke_test.py
 
-This is the authoritative bit-exactness check for the crypto/packet port
-(see aochat/crypto.py's module docstring) -- there is no PHP interpreter
-available in the dev environment to cross-check against BeBot's original
-AoChat.php directly, so a successful real login is the real verification.
+This is the authoritative bit-exactness check for the crypto/packet
+implementation (see aochat/crypto.py's module docstring) -- a successful
+real login is the real verification.
 """
 
 import asyncio

@@ -1,22 +1,15 @@
 """AO chat login key derivation and login-blob encryption.
 
-Ported from BeBot's Sources/AoChat.php. This is a 'half' Diffie-Hellman key
-exchange (we already have the server's public key $dhY; $dhN is a prime,
-$dhG is a generator for it -- AoChat.php:1474-1504) followed by a TEA-family
-block cipher (AoChat.php::aochat_crypt/aocrypt_permute, AoChat.php:1634-1689)
-that encrypts the login blob (random prefix + big-endian length + the
-"username|serverseed|password" string + space padding) under the derived
-shared secret.
+This is a 'half' Diffie-Hellman key exchange (the client already has the
+server's public key dhY; dhN is a prime, dhG is a generator for it)
+followed by a TEA-family block cipher that encrypts the login blob (random
+prefix + big-endian length + the "username|serverseed|password" string +
+space padding) under the derived shared secret.
 
-All bignum exponentiation in the PHP original goes through a hand-rolled
-bcmath modpow (AoChat.php::bcmath_powm) purely because PHP lacks a native
-arbitrary-precision pow(); Python's builtin pow(base, exp, mod) does the
-identical modular exponentiation natively, so that machinery isn't ported.
+Python's builtin pow(base, exp, mod) handles the modular exponentiation
+natively -- no bignum library needed.
 
-Byte order note: AoChat.php's aochat_crypt/SafeDecHexReverseEndian rely on
-PHP's pack/unpack "L" format, which is native-endian. This is ported
-assuming a little-endian host (x86_64), matching BeBot's actual Alpine/x86_64
-container deployment.
+Byte order note: this assumes a little-endian host (x86_64).
 """
 
 import secrets
@@ -26,8 +19,8 @@ MASK32 = 0xFFFFFFFF
 TEA_DELTA = 0x9E3779B9
 TEA_ROUNDS = 32
 
-# Protocol constants, copied verbatim from AoChat.php:1483-1487 (not secrets --
-# dhY is the AO chat server's public DH key, dhN/dhG are the fixed prime/generator).
+# Protocol constants (not secrets -- dhY is the AO chat server's public DH
+# key, dhN/dhG are the fixed prime/generator).
 DH_Y = int(
     "9c32cc23d559ca90fc31be72df817d0e124769e809f936bc14360ff4bed758f260a0d596584eacbbc2b88bdd410416"
     "163e11dbf62173393fbc0c6fefb2d855f1a03dec8e9f105bbad91b3437d8eb73fe2f44159597aa4053cf788d2f9d7012"
@@ -44,12 +37,10 @@ DH_G = 5
 
 
 def _permute(a: int, b: int, key_words: tuple[int, int, int, int]) -> tuple[int, int]:
-    """Port of AoChat.php::aocrypt_permute (AoChat.php:1664-1689).
+    """TEA-family block permutation round function.
 
-    All arithmetic kept in unsigned 32-bit space throughout (the PHP
-    original's ReduceTo32Bit()-wrapped signed 32-bit arithmetic is
-    bit-identical to unsigned mod-2^32 arithmetic for +, ^, <<, and the
-    explicitly-masked >> used here).
+    All arithmetic kept in unsigned 32-bit space throughout (+, ^, <<, and
+    the explicitly-masked >> used here).
     """
     k1, k2, k3, k4 = key_words
     c = 0
@@ -68,12 +59,12 @@ def _permute(a: int, b: int, key_words: tuple[int, int, int, int]) -> tuple[int,
 
 
 def aochat_crypt(key_hex: str, plain: bytes) -> str:
-    """Port of AoChat.php::aochat_crypt (AoChat.php:1634-1661).
+    """Encrypts the login blob under the derived shared secret.
 
     `key_hex` must be exactly 32 hex chars (16 bytes); `plain` must be a
     multiple of 8 bytes. Returns the ciphertext as a lowercase hex string
     (this is embedded directly into the login packet's key argument, not
-    sent as raw bytes -- matches the PHP original's string-building return).
+    sent as raw bytes).
     """
     if len(key_hex) != 32:
         raise ValueError("key_hex must be exactly 32 hex characters (16 bytes)")
@@ -95,7 +86,7 @@ def aochat_crypt(key_hex: str, plain: bytes) -> str:
 
 
 def generate_login_key(server_seed: bytes, username: str, password: str) -> str:
-    """Port of AoChat.php::generate_login_key (AoChat.php:1481-1504).
+    """Derives the login key from the server seed and account credentials.
 
     Returns "<dhX-hex>-<encrypted-blob-hex>", sent as the AOCP_LOGIN_REQUEST
     packet's key argument.

@@ -30,8 +30,7 @@ class MarketRepo:
 
     async def unregister_cascade(self, player: str) -> int:
         """Deletes subscriptions, pending alerts, the user row, and the
-        action ledger. Returns the subscription count that was removed
-        (mirrors Market.php::cmd_unregister()'s watchCount)."""
+        action ledger. Returns the subscription count that was removed."""
         sub_count = (
             await self._session.execute(
                 select(func.count()).select_from(MarketSubscription).where(MarketSubscription.player == player)

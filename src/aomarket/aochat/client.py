@@ -1,12 +1,12 @@
 """High-level AO chat session: login sequence, keepalive, inbound dispatch.
 
-Login sequence ported from AoChat.php::connect()/authenticate()/login()
-(AoChat.php:221-555): wait for LOGIN_SEED -> send LOGIN_REQUEST with the
+Login sequence: wait for LOGIN_SEED -> send LOGIN_REQUEST with the
 DH+TEA-derived key -> receive LOGIN_CHARLIST -> send LOGIN_SELECT for the
 configured character -> receive LOGIN_OK.
 
-Only the packet types Market needs are dispatched (see aochat/packet.py's
-IN_SCHEMAS) -- guild/duel/group chat and friends are out of scope.
+Only the packet types the market module needs are dispatched (see
+aochat/packet.py's IN_SCHEMAS) -- guild/duel/group chat and friends are
+out of scope.
 """
 
 import asyncio
