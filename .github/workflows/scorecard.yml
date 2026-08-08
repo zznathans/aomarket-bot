@@ -13,6 +13,14 @@ on:
     - cron: '33 21 * * 6'
   push:
     branches: [ "main" ]
+  # Almost every change can move Scorecard's score (new/changed
+  # dependencies, action pins, Dockerfile, workflow permissions, etc.) --
+  # run on PRs too, not just main pushes/weekly cron. publish_results is
+  # forced off below for PR runs (see the "Run analysis" step): Scorecard
+  # only wants the canonical main-branch analysis published to the public
+  # OpenSSF API, not a PR branch's in-progress state.
+  pull_request:
+    branches: [ "main" ]
 
 # Declare default permissions as read only.
 permissions: read-all
@@ -56,7 +64,11 @@ jobs:
           # For private repositories:
           #   - `publish_results` will always be set to `false`, regardless
           #     of the value entered here.
-          publish_results: true
+          # Only publish for the canonical main-branch analysis (push/
+          # schedule/branch_protection_rule) -- not for pull_request runs,
+          # which only exist to surface findings on the PR itself via the
+          # code-scanning upload below.
+          publish_results: ${{ github.event_name != 'pull_request' }}
 
           # (Optional) Uncomment file_mode if you have a .gitattributes with files marked export-ignore
           # file_mode: git
