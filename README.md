@@ -1,6 +1,7 @@
 # aomarket-bot
 
-[![CI](https://github.com/zznathans/aomarket-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/ci.yml)
+[![Lint](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json)](#python-version-support)
+[![Tests](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json)](#python-version-support)
 [![Docker](https://github.com/zznathans/aomarket-bot/actions/workflows/docker.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/docker.yml)
 [![Release](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml)
 [![Scorecard](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml)
