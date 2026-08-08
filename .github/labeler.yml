@@ -21,12 +21,21 @@ db:
           - "migrations/**"
           - "alembic.ini"
 
-clients:
+aodb:
   - changed-files:
-      - any-glob-to-any-file:
-          - "src/aomarket/aodb/**"
-          - "src/aomarket/gmi/**"
-          - "src/aomarket/autotrack/**"
+      - any-glob-to-any-file: "src/aomarket/aodb/**"
+
+gmi:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/gmi/**"
+
+autotrack:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/autotrack/**"
+
+core:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/*.py"
 
 tests:
   - changed-files:
