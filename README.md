@@ -6,6 +6,7 @@
 [![Release](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml)
 [![Scorecard](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml)
 [![Upload Scorecard SARIF](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard-upload.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard-upload.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/zznathans/aomarket-bot/badge)](https://scorecard.dev/viewer/?uri=github.com/zznathans/aomarket-bot)
 [![Commit Lint](https://github.com/zznathans/aomarket-bot/actions/workflows/commitlint.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/commitlint.yml)
 [![Dependency review](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml)
 [![Pull Request Labeler](https://github.com/zznathans/aomarket-bot/actions/workflows/labeler.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/labeler.yml)
