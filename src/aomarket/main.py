@@ -17,9 +17,17 @@ from aomarket.logging import configure_logging, get_logger
 log = get_logger(__name__)
 
 
-async def _seed_settings(sessionmaker) -> None:
+async def _seed_settings(engine, sessionmaker) -> None:
     async with sessionmaker() as session:
         await SettingsRepo(session).seed_defaults()
+    # asyncpg connections are bound to the event loop that opened them.
+    # asyncio.run() below spins up and tears down its own loop just for
+    # this seed step; without disposing here, the pool holds onto
+    # connections from that now-closed loop and the first request under
+    # uvicorn's (different) loop fails with "Event loop is closed" before
+    # the pool recovers. Disposing forces a clean, lazy reconnect under
+    # whichever loop asks for a connection next.
+    await engine.dispose()
 
 
 def main() -> None:
@@ -28,7 +36,7 @@ def main() -> None:
 
     engine = make_engine(config.database_url)
     sessionmaker = make_sessionmaker(engine)
-    asyncio.run(_seed_settings(sessionmaker))
+    asyncio.run(_seed_settings(engine, sessionmaker))
 
     aodb = AodbClient(config.aodb_api_url)
     gmi = GmiClient(config.gmi_api_url)
