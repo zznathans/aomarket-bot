@@ -15,7 +15,7 @@ permissions:
 jobs:
   lint:
     name: Lint (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
 
     strategy:
       matrix:
