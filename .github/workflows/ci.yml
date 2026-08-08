@@ -1,4 +1,3 @@
-```yaml
 name: CI
 
 on:
@@ -84,4 +83,3 @@ jobs:
       # silently skipped -- requires_postgres only degrades to skip when no
       # Postgres is reachable, which shouldn't happen with the service above.
       - run: pytest -v
-```
