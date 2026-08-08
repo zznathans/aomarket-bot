@@ -1,8 +1,0 @@
-.venv
-.git
-.pytest_cache
-__pycache__
-*.pyc
-tests
-.env
-docker-compose.yml
