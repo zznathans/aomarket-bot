@@ -162,6 +162,10 @@ jobs:
     needs: release
     if: needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
+    # Shared with pages.yml's publish-docs job -- both push to gh-pages,
+    # this serializes them instead of letting them race.
+    concurrency:
+      group: gh-pages-publish
     permissions:
       contents: write
     steps:
