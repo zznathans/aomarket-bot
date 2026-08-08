@@ -32,8 +32,6 @@ jobs:
     # `publish_results: true` only works when run from the default branch. conditional can be removed if disabled.
     if: github.event.repository.default_branch == github.ref_name || github.event_name == 'pull_request'
     permissions:
-      # Needed to upload the results to code-scanning dashboard.
-      security-events: write
       # Needed to publish results and get a badge (see publish_results below).
       id-token: write
       # Uncomment the permissions below if installing in a private repository.
@@ -66,8 +64,9 @@ jobs:
           #     of the value entered here.
           # Only publish for the canonical main-branch analysis (push/
           # schedule/branch_protection_rule) -- not for pull_request runs,
-          # which only exist to surface findings on the PR itself via the
-          # code-scanning upload below.
+          # which only exist to surface findings via the SARIF artifact
+          # below (see that step's comment for why code-scanning upload
+          # was dropped).
           publish_results: ${{ github.event_name != 'pull_request' }}
 
           # (Optional) Uncomment file_mode if you have a .gitattributes with files marked export-ignore
@@ -75,16 +74,19 @@ jobs:
 
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
+      #
+      # NOT also uploading to the code-scanning dashboard here (as GitHub's
+      # own starter template suggests) -- github/codeql-action/upload-sarif
+      # is a monorepo-subdirectory action, and Scorecard's own
+      # publish_results workflow-verification step (Sigstore/rekor-based)
+      # rejects any SHA pinned for it as an "imposter commit" no matter
+      # which real release commit it's pinned to, which broke
+      # publish_results entirely. Trivy and CodeQL already report to this
+      # repo's code-scanning dashboard separately, so nothing is lost by
+      # relying on the SARIF artifact + the OpenSSF-published score instead.
       - name: "Upload artifact"
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: SARIF file
           path: results.sarif
           retention-days: 5
-
-      # Upload the results to GitHub's code scanning dashboard (optional).
-      # Commenting out will disable upload of results to your repo's Code Scanning dashboard
-      - name: "Upload to code-scanning"
-        uses: github/codeql-action/upload-sarif@9e3211c9a3b9311dfe05da2ed48eea3386f042dd # v4.37.6
-        with:
-          sarif_file: results.sarif

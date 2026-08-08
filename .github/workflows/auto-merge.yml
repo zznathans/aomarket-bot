@@ -1,0 +1,35 @@
+name: Auto-merge PRs
+
+# Automatically enables auto-merge on every non-draft PR the moment it's
+# opened -- whether opened by a person via the UI or by automation. This
+# repo has no external contributors, so there's no fork-PR trust boundary
+# to worry about; the required_status_checks rule on the branch ruleset
+# is what actually gates the merge, this just removes the manual "click
+# enable auto-merge" step every single time.
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    name: Enable auto-merge
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Enable auto-merge (rebase)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # continue-on-error: this is pure convenience -- a PR that's
+        # already mergeable (auto-merges immediately) or already has
+        # auto-merge enabled will make `gh pr merge --auto` error, which
+        # shouldn't show up as a failed check on the PR itself.
+        continue-on-error: true
+        run: |
+          gh pr merge "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --rebase --auto
