@@ -19,9 +19,10 @@ TEST_DATABASE_URL = os.environ.get(
 
 
 def _pg_available() -> bool:
-    import asyncpg  # noqa: F401
     import socket
     from urllib.parse import urlparse
+
+    import asyncpg  # noqa: F401
 
     parsed = urlparse(TEST_DATABASE_URL.replace("+asyncpg", ""))
     try:

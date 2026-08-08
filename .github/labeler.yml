@@ -1,0 +1,53 @@
+aochat:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/aochat/**"
+
+market:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/market/**"
+
+api:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/api/**"
+
+bot-runtime:
+  - changed-files:
+      - any-glob-to-any-file: "src/aomarket/bot/**"
+
+db:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/aomarket/db/**"
+          - "migrations/**"
+          - "alembic.ini"
+
+clients:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/aomarket/aodb/**"
+          - "src/aomarket/gmi/**"
+          - "src/aomarket/autotrack/**"
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file: "tests/**"
+
+docker:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "Dockerfile"
+          - ".dockerignore"
+          - "docker-entrypoint.sh"
+          - "docker-compose.yml"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/**"
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: "pyproject.toml"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: "**/*.md"

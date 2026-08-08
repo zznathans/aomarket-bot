@@ -57,7 +57,10 @@ async def handle_command(service: MarketService, player: str, msg: str) -> str:
         except MarketError as exc:
             return _format_error(exc)
 
-    return "Usage: market <item name> | market <aoid> | market status | market register | market watch <item> | market unwatch <aoid> | market watchlist | market help"
+    return (
+        "Usage: market <item name> | market <aoid> | market status | market register | "
+        "market watch <item> | market unwatch <aoid> | market watchlist | market help"
+    )
 
 
 async def _dispatch(service: MarketService, player: str, name: str, match: re.Match) -> str:
@@ -99,13 +102,17 @@ async def _dispatch(service: MarketService, player: str, name: str, match: re.Ma
         aoid, spec = int(match.group(1)), match.group(2).strip()
         await service.set_price_filter(player, aoid, spec)
         sub = await service.get_filter(player, aoid)
-        return "Price filter updated. " + rendering.describe_filter(sub.min_price, sub.max_price, sub.min_ql, sub.max_ql)
+        return "Price filter updated. " + rendering.describe_filter(
+            sub.min_price, sub.max_price, sub.min_ql, sub.max_ql
+        )
 
     if name == "filter_ql":
         aoid, spec = int(match.group(1)), match.group(2).strip()
         await service.set_ql_filter(player, aoid, spec)
         sub = await service.get_filter(player, aoid)
-        return "QL filter updated. " + rendering.describe_filter(sub.min_price, sub.max_price, sub.min_ql, sub.max_ql)
+        return "QL filter updated. " + rendering.describe_filter(
+            sub.min_price, sub.max_price, sub.min_ql, sub.max_ql
+        )
 
     if name == "filter_clear":
         aoid = int(match.group(1))

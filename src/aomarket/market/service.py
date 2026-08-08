@@ -347,7 +347,9 @@ class MarketService:
         notified = 0
         for sub in subs:
             matching = [
-                o for o in new_orders if self.order_matches_filter(o, sub.min_price, sub.max_price, sub.min_ql, sub.max_ql)
+                o
+                for o in new_orders
+                if self.order_matches_filter(o, sub.min_price, sub.max_price, sub.min_ql, sub.max_ql)
             ]
             if not matching:
                 continue
@@ -360,7 +362,13 @@ class MarketService:
                 await self.repo.queue_pending_alert(sub.player, aoid, message)
             notified += 1
 
-        log.info("notify_subscribers", aoid=aoid, notified=notified, subscriber_count=len(subs), new_order_count=len(new_orders))
+        log.info(
+            "notify_subscribers",
+            aoid=aoid,
+            notified=notified,
+            subscriber_count=len(subs),
+            new_order_count=len(new_orders),
+        )
         return notified
 
     async def _send_tell(self, player: str, message: str) -> None:

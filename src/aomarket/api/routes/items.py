@@ -6,7 +6,14 @@ router = APIRouter(prefix="/items", tags=["items"])
 
 
 @router.get("", response_model=list[ItemOut])
-async def search_items(request: Request, response: Response, q: str = Query(...), ql: int | None = None, limit: int = 50, offset: int = 0):
+async def search_items(
+    request: Request,
+    response: Response,
+    q: str = Query(...),
+    ql: int | None = None,
+    limit: int = 50,
+    offset: int = 0,
+):
     items, total = await request.app.state.aodb.search_items(q, ql=ql, limit=limit, offset=offset)
     response.headers["X-Total-Count"] = str(total)
     return [ItemOut(aoid=i.aoid, name=i.name, ql=i.ql, icon=i.icon, description=i.description) for i in items]

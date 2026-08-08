@@ -25,6 +25,7 @@ dev = [
     "pytest-asyncio>=0.23",
     "respx>=0.21",
     "aiosqlite>=0.20",
+    "ruff>=0.6",
 ]
 
 [tool.setuptools.packages.find]
@@ -36,3 +37,13 @@ testpaths = ["tests"]
 markers = [
     "integration: requires live external services (AO chat server, real credentials); skipped by default",
 ]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# B008: FastAPI's Depends()-as-default-argument is the framework's own
+# idiom, not a bug -- see https://fastapi.tiangolo.com/tutorial/dependencies/
+ignore = ["B008"]

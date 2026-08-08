@@ -1,7 +1,20 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, Enum, ForeignKey, Index, Integer, Numeric, Text, UniqueConstraint, func
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 TZ_TIMESTAMP = DateTime(timezone=True)
@@ -11,7 +24,7 @@ class Base(DeclarativeBase):
     pass
 
 
-class SubscriptionSide(str, enum.Enum):
+class SubscriptionSide(enum.StrEnum):
     buy = "buy"
     sell = "sell"
 
@@ -102,4 +115,6 @@ class Setting(Base):
     key: Mapped[str] = mapped_column(Text, primary_key=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     value_type: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(TZ_TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        TZ_TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False
+    )

@@ -5,7 +5,7 @@ import pytest
 from aomarket.aodb.client import Item
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
-from aomarket.gmi.client import BuyOrder, Orders, SellOrder
+from aomarket.gmi.client import Orders, SellOrder
 from aomarket.market.errors import (
     AlreadyRegisteredError,
     AlreadyWatchingError,

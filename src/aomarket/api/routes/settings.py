@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from aomarket.api.deps import get_db_session, get_service
+from aomarket.api.deps import get_service
 from aomarket.api.schemas import SettingOut, SettingUpdate
 from aomarket.db.settings_repo import UnknownSettingError
 

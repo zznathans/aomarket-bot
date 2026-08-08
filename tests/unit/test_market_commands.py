@@ -26,6 +26,10 @@ class FakeGmiClient:
         return Orders(sell_orders=[SellOrder(price=1000, ql=150, count=1, seller="Bob")], buy_orders=[])
 
 
+def _splitter_item() -> Item:
+    return Item(aoid=2, name="Notum Splitter", ql=150, icon=1, description=None)
+
+
 async def _make_service(db_session, items=None):
     repo = MarketRepo(db_session)
     settings = SettingsRepo(db_session)
@@ -76,7 +80,7 @@ async def test_register_twice_returns_friendly_error_not_traceback(db_session):
 @requires_postgres
 @pytest.mark.asyncio
 async def test_watch_aoid_without_registration_gives_friendly_error(db_session):
-    service = await _make_service(db_session, items={2: Item(aoid=2, name="Notum Splitter", ql=150, icon=1, description=None)})
+    service = await _make_service(db_session, items={2: _splitter_item()})
 
     reply = await handle_command(service, "Alice", "market watch 2")
 
@@ -86,7 +90,7 @@ async def test_watch_aoid_without_registration_gives_friendly_error(db_session):
 @requires_postgres
 @pytest.mark.asyncio
 async def test_watch_aoid_full_flow(db_session):
-    service = await _make_service(db_session, items={2: Item(aoid=2, name="Notum Splitter", ql=150, icon=1, description=None)})
+    service = await _make_service(db_session, items={2: _splitter_item()})
     await handle_command(service, "Alice", "market register")
 
     reply = await handle_command(service, "Alice", "market watch 2")
@@ -110,7 +114,7 @@ async def test_unknown_aoid_overview_gives_friendly_message(db_session):
 @pytest.mark.asyncio
 async def test_search_by_name(db_session):
     service = await _make_service(
-        db_session, items={2: Item(aoid=2, name="Notum Splitter", ql=150, icon=1, description=None)}
+        db_session, items={2: _splitter_item()}
     )
 
     reply = await handle_command(service, "Alice", "market splitter")
@@ -141,7 +145,7 @@ async def test_unwatch_all_requires_confirm(db_session):
 @requires_postgres
 @pytest.mark.asyncio
 async def test_filter_price_full_flow(db_session):
-    service = await _make_service(db_session, items={2: Item(aoid=2, name="Notum Splitter", ql=150, icon=1, description=None)})
+    service = await _make_service(db_session, items={2: _splitter_item()})
     await handle_command(service, "Alice", "market register")
     await handle_command(service, "Alice", "market watch 2")
 

@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncIterator, Awaitable, Callable
-from typing import TypeVar
 
 from fastapi import Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,8 +8,6 @@ from aomarket.bot.runner import BotHandle
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
 from aomarket.market.service import ChatSink, MarketService
-
-T = TypeVar("T")
 
 
 async def get_db_session(request: Request) -> AsyncIterator[AsyncSession]:
@@ -58,7 +55,7 @@ class BotNotReadyError(Exception):
     pass
 
 
-async def call_on_bot(handle: BotHandle, coro_factory: Callable[[], Awaitable[T]]) -> T:
+async def call_on_bot[T](handle: BotHandle, coro_factory: Callable[[], Awaitable[T]]) -> T:
     """Bridges a coroutine onto the bot thread's event loop from any other
     thread/loop (here, FastAPI's), per the concurrency design: schedule via
     run_coroutine_threadsafe, then await the resulting concurrent.futures.Future
