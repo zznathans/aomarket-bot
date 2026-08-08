@@ -15,6 +15,7 @@ on:
     paths:
       - "**/README.md"
       - "docs/_config.yml"
+      - "docs/CNAME"
       - ".github/workflows/pages.yml"
 
 concurrency:
@@ -48,6 +49,7 @@ jobs:
           find . -name README.md -not -path './.git/*' \
             -exec cp --parents {} /tmp/gh-pages/ \;
           cp docs/_config.yml /tmp/gh-pages/_config.yml
+          cp docs/CNAME /tmp/gh-pages/CNAME
 
           cd /tmp/gh-pages
           git config user.name "github-actions[bot]"

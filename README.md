@@ -82,7 +82,7 @@ A Helm chart lives in [`charts/aomarket-bot`](charts/aomarket-bot/README.md)
 and is published to this repo's own Helm repository on every release:
 
 ```bash
-helm repo add aomarket-bot https://zznathans.github.io/aomarket-bot/
+helm repo add aomarket-bot https://marketbot.ao.yeetbox.net/
 helm repo update
 helm install aomarket-bot aomarket-bot/aomarket-bot \
   --set aomarketBot.secret.databaseUrl="postgresql+asyncpg://user:pass@host:5432/dbname"
@@ -113,11 +113,11 @@ version failing doesn't block the others from reporting).
 
 | Version | Lint | Tests |
 | --- | --- | --- |
-| 3.11 | ![lint 3.11](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.11.json) | ![tests 3.11](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.11.json) |
-| 3.12 | ![lint 3.12](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.12.json) | ![tests 3.12](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.12.json) |
-| 3.13 | ![lint 3.13](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.13.json) | ![tests 3.13](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.13.json) |
-| 3.14 (required) | ![lint 3.14](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.14.json) | ![tests 3.14](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.14.json) |
-| 3.15.0-rc.1 | ![lint 3.15](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.15.0-rc.1.json) | ![tests 3.15](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.15.0-rc.1.json) |
+| 3.11 | ![lint 3.11](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.11.json) | ![tests 3.11](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.11.json) |
+| 3.12 | ![lint 3.12](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.12.json) | ![tests 3.12](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.12.json) |
+| 3.13 | ![lint 3.13](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.13.json) | ![tests 3.13](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.13.json) |
+| 3.14 (required) | ![lint 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json) | ![tests 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json) |
+| 3.15.0-rc.1 | ![lint 3.15](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.15.0-rc.1.json) | ![tests 3.15](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.15.0-rc.1.json) |
 
 These reflect the most recent push to `main` (each matrix leg in
 [`ci.yml`](.github/workflows/ci.yml) publishes its own status to
