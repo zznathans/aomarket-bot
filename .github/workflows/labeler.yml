@@ -3,6 +3,10 @@ name: "Pull Request Labeler"
 on:
   - pull_request_target
 
+# Least-privilege default; the labeler job below grants itself only what
+# it actually needs.
+permissions: {}
+
 jobs:
   labeler:
     permissions:

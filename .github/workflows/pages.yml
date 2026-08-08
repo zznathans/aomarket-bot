@@ -21,13 +21,16 @@ on:
 concurrency:
   group: gh-pages-publish
 
-permissions:
-  contents: write
+# Least-privilege default; the publish-docs job below grants itself only
+# what it actually needs.
+permissions: {}
 
 jobs:
   publish-docs:
     name: Publish docs site
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
