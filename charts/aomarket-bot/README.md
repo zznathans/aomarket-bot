@@ -6,7 +6,7 @@ this repo rather than a separate one, alongside the code it deploys.
 ## Install
 
 ```bash
-helm repo add aomarket-bot https://zznathans.github.io/aomarket-bot/
+helm repo add aomarket-bot https://marketbot.ao.yeetbox.net/
 helm repo update
 helm install aomarket-bot aomarket-bot/aomarket-bot \
   --set aomarketBot.secret.databaseUrl="postgresql+asyncpg://user:pass@host:5432/dbname"
