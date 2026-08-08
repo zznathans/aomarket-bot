@@ -103,6 +103,27 @@ ruff check .
 See [`tests/README.md`](tests/README.md) for how the test suite is laid
 out and what needs a live Postgres.
 
+### Python version support
+
+`pyproject.toml` requires Python >=3.12, but CI runs lint and the test
+suite against a wider range on every push to `main` so regressions on
+other versions surface early. Only **3.14** is a required check for
+merging — the rest are informational (`fail-fast: false`, so one
+version failing doesn't block the others from reporting).
+
+| Version | Lint | Tests |
+| --- | --- | --- |
+| 3.11 | ![lint 3.11](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.11.json) | ![tests 3.11](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.11.json) |
+| 3.12 | ![lint 3.12](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.12.json) | ![tests 3.12](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.12.json) |
+| 3.13 | ![lint 3.13](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.13.json) | ![tests 3.13](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.13.json) |
+| 3.14 (required) | ![lint 3.14](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.14.json) | ![tests 3.14](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.14.json) |
+| 3.15.0-rc.1 | ![lint 3.15](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/lint-3.15.0-rc.1.json) | ![tests 3.15](https://img.shields.io/endpoint?url=https://zznathans.github.io/aomarket-bot/badges/tests-3.15.0-rc.1.json) |
+
+These reflect the most recent push to `main` (each matrix leg in
+[`ci.yml`](.github/workflows/ci.yml) publishes its own status to
+`gh-pages` as a small JSON file, since GitHub's own workflow badges only
+report the workflow as a whole, not individual matrix legs).
+
 Commits must follow [Conventional Commits](https://www.conventionalcommits.org/)
 (`fix(component): …`, `feat(component): …`, …) — enforced by CI and
 required for [semantic-release](https://github.com/semantic-release/semantic-release)
