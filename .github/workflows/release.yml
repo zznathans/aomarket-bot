@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      !contains(github.event.workflow_run.head_commit.message, '[skip ci]')
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      # RELEASE_PAT: a fine-grained PAT scoped to this repo (Contents: write)
+      # is required instead of the default GITHUB_TOKEN -- GitHub does not
+      # re-trigger other workflows (docker.yml's `push: tags` below) off a
+      # tag/release created by the default token, only off a "real" actor's
+      # token. This is the same pattern used on zznathans/aodb-api and
+      # zznathans/BeBot for the same reason.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.RELEASE_PAT }}
+
+      - uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 24
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/exec
+            @semantic-release/git
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}

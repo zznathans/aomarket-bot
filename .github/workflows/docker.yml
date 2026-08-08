@@ -1,8 +1,11 @@
 name: Docker
 
 on:
+  # Publishing is deliberately tag-only: main pushes get built and Trivy-
+  # scanned for verification on every PR (see below), but ghcr.io only
+  # gets a new image when semantic-release (release.yml) cuts a version
+  # tag. There's no "latest floating on main" image.
   push:
-    branches: [main]
     tags: ["v*.*.*"]
   pull_request:
     paths:
@@ -52,11 +55,9 @@ jobs:
         with:
           images: ghcr.io/zznathans/aomarket-bot
           tags: |
-            type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=short
 
       - name: Build image
         id: build
