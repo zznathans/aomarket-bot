@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "aomarket-bot"
 version = "0.1.0"
 description = "Standalone Anarchy Online market-tracking bot with a FastAPI control surface"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
