@@ -1,10 +1,8 @@
 name: Release
 
 on:
-  workflow_run:
-    workflows: ["CI"]
+  push:
     branches: [main]
-    types: [completed]
 
 permissions:
   contents: read
@@ -13,9 +11,17 @@ jobs:
   release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    if: |
-      github.event.workflow_run.conclusion == 'success' &&
-      !contains(github.event.workflow_run.head_commit.message, '[skip ci]')
+    # Previously gated on the "CI" workflow's overall conclusion via
+    # workflow_run -- but that conclusion is "failure" whenever ANY job
+    # fails, including the informational-only Python versions in the test
+    # matrix (see README's "Python version support" section: only 3.14 is
+    # actually required to merge). Once the matrix grew past just the
+    # required version, that made this trigger permanently misfire --
+    # main's branch ruleset already requires the real gating checks
+    # (Lint/Tests on 3.14, CodeQL, Scorecard, etc.) to pass before a PR
+    # can merge at all, so by the time a push lands here those are already
+    # known-good; no need to re-check a workflow_run's conclusion.
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     permissions:
       contents: write
       issues: write
