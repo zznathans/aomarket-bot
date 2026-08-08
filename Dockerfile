@@ -22,6 +22,18 @@ RUN apt-get update \
 
 COPY --from=builder /install /usr/local
 
+# python:3.12-slim itself ships pip/setuptools/wheel pre-installed (that's
+# how the `pip install` in the builder stage works without a bootstrap
+# step) -- the --prefix=/install copy above only avoided *reinstalling*
+# them, it did nothing about this base image's own bundled copies, which
+# is what Trivy was actually flagging (pip has had HIGH-severity CVEs;
+# runtime never invokes pip at all). Strip them explicitly here.
+RUN python -m pip uninstall -y pip setuptools wheel \
+    && rm -rf /usr/local/lib/python3.12/site-packages/pip* \
+              /usr/local/lib/python3.12/site-packages/setuptools* \
+              /usr/local/lib/python3.12/site-packages/wheel* \
+              /usr/local/bin/pip*
+
 WORKDIR /app
 
 COPY migrations ./migrations
