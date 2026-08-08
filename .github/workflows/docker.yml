@@ -46,6 +46,13 @@ jobs:
           tags: aomarket-bot:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        
+      - uses: kitabisa/docker-slim-action@v1
+        env:
+          DSLIM_HTTP_PROBE: false
+        with:
+          target: aomarket-bot:pr-${{ github.event.pull_request.number }}
+          tag: "aomarket-bot-slim:pr-${{ github.event.pull_request.number }}"
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
