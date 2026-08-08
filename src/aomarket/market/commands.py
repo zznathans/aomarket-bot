@@ -1,8 +1,8 @@
-"""In-game `market`/`mkt` command dispatch. Regex sub-dispatch mirrors
-Market.php::command_handler()'s ordering (most-specific pattern first) --
-calls straight into MarketService (the same methods api/routes/*.py calls)
-and renders results via rendering.py. MarketService raises typed errors;
-this layer's only job is turning those into chat-friendly text.
+"""In-game `market`/`mkt` command dispatch. Regex sub-dispatch, ordered
+most-specific pattern first -- calls straight into MarketService (the
+same methods api/routes/*.py calls) and renders results via rendering.py.
+MarketService raises typed errors; this layer's only job is turning those
+into chat-friendly text.
 """
 
 import re

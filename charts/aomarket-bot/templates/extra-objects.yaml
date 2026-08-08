@@ -1,0 +1,4 @@
+{{- range .Values.aomarketBot.extraObjects }}
+---
+{{ toYaml . }}
+{{- end }}

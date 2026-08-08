@@ -1,9 +1,6 @@
 """Chat-text formatting for command replies. Plain text (no AO-specific
 chatcmd()/make_blob()/itemref:// markup, which is an in-game-client-only
-presentation layer) -- ported at the content level from Market.php's
-render_summary()/render_ql_table()/render_orders()/show_* methods, not
-byte-for-byte, since the original's markup has no meaning outside a live
-AO chat window.
+presentation layer with no meaning outside a live AO chat window).
 """
 
 from aomarket.gmi.client import Orders

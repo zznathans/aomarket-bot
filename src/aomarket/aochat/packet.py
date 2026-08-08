@@ -1,19 +1,18 @@
 """AO chat packet framing and argument codecs.
 
-Ported from BeBot's Sources/AoChatPacket.php. Only the subset of packet
-types Market needs is implemented (see AOCP_* below) -- guild, duel,
-group/vicinity chat, clientmode, forward/CC/admin-mux packets are
-intentionally excluded.
+Only the subset of packet types the market module needs is implemented
+(see AOCP_* below) -- guild, duel, group/vicinity chat, clientmode,
+forward/CC/admin-mux packets are intentionally excluded.
 """
 
 import struct
 from dataclasses import dataclass
 from typing import Any
 
-HEADER = struct.Struct(">HH")  # (type, length), matches PHP unpack("n2", $head)
+HEADER = struct.Struct(">HH")  # (type, length)
 
-# Packet type IDs (Sources/AoChat.php:85-123). LOGIN_SEED (in) and
-# LOGIN_CHARID (out) share id 0; distinguished by direction, not value.
+# Packet type IDs. LOGIN_SEED (in) and LOGIN_CHARID (out) share id 0;
+# distinguished by direction, not value.
 AOCP_LOGIN_SEED = 0
 AOCP_LOGIN_REQUEST = 2
 AOCP_LOGIN_SELECT = 3
@@ -31,9 +30,8 @@ AOCP_PRIVGRP_CLIPART = 56
 AOCP_PRIVGRP_MESSAGE = 57
 AOCP_PING = 100
 
-# Argument schemas, "in" (server->client) and "out" (client->server), copied
-# from AoChatPacket.php's $GLOBALS["aochat-packetmap"] for AOCHAT_GAME=='ao'
-# (aocpdifs = ["IS", "IIS", "IS", "s"]). Only entries Market needs are kept.
+# Argument schemas, "in" (server->client) and "out" (client->server), for
+# the AO game protocol. Only entries the market module needs are kept.
 IN_SCHEMAS: dict[int, str] = {
     AOCP_LOGIN_SEED: "S",
     AOCP_LOGIN_OK: "",
@@ -74,7 +72,7 @@ def decode_header(data: bytes) -> tuple[int, int]:
 
 
 def encode_args(packet_type: int, args: list[Any]) -> bytes:
-    """Encode outbound packet arguments per OUT_SCHEMAS (AoChatPacket.php:307-346)."""
+    """Encode outbound packet arguments per OUT_SCHEMAS."""
     schema = OUT_SCHEMAS[packet_type]
     remaining = list(args)
     out = bytearray()
@@ -91,7 +89,7 @@ def encode_args(packet_type: int, args: list[Any]) -> bytes:
 
 
 def decode_args(packet_type: int, data: bytes) -> list[Any]:
-    """Decode inbound packet arguments per IN_SCHEMAS (AoChatPacket.php:251-306)."""
+    """Decode inbound packet arguments per IN_SCHEMAS."""
     schema = IN_SCHEMAS[packet_type]
     args: list[Any] = []
     offset = 0

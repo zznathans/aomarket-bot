@@ -1,9 +1,8 @@
 """Two long-running asyncio tasks: poll and auto-track cycles.
 
-Ported from Market.php's Market-Poll/Market-AutoTrack timers (Market.php:93-
-121, 1438-1448) as plain asyncio.sleep loops rather than a persisted-timer
-table -- re-reads its interval setting every cycle (so a setting change
-applies without a restart) and never lets one bad cycle kill the loop.
+Plain asyncio.sleep loops rather than a persisted-timer table -- re-reads
+its interval setting every cycle (so a setting change applies without a
+restart) and never lets one bad cycle kill the loop.
 """
 
 import asyncio

@@ -18,7 +18,7 @@ class SettingDefault:
     value_type: ValueType
 
 
-# Mirrors Market.php's Settings_Core::create() defaults (Modules/Ao/Market.php ctor).
+# Default settings for the market module.
 DEFAULT_SETTINGS: list[SettingDefault] = [
     SettingDefault("Enabled", False, "bool"),
     SettingDefault("ApiUrl", "https://gmi.nadybot.org", "str"),

@@ -13,11 +13,9 @@ class Item:
 
 
 class AodbClient:
-    """Thin wrapper around aodb-api's /v2/items JSON endpoints.
-
-    See https://github.com/zznathans/aodb-api app/v2.py: bare JSON array
-    responses, X-Total-Count header for pagination, 404 JSON body on miss,
-    unauthenticated.
+    """Thin wrapper around the aodb-api /v2/items JSON endpoints: bare JSON
+    array responses, X-Total-Count header for pagination, 404 JSON body on
+    miss, unauthenticated.
     """
 
     def __init__(self, base_url: str, http_client: httpx.AsyncClient | None = None):

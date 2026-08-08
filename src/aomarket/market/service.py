@@ -1,7 +1,7 @@
-"""MarketService: transport-agnostic port of Modules/Ao/Market.php's business
-logic. No knowledge of chat or HTTP -- callers (chat commands, API routes)
-adapt its typed results/exceptions to their own presentation. Optional
-`ChatSink` callbacks are the only side channel out, used for the
+"""MarketService: transport-agnostic market business logic. No knowledge of
+chat or HTTP -- callers (chat commands, API routes) adapt its typed
+results/exceptions to their own presentation. Optional `ChatSink`
+callbacks are the only side channel out, used for the
 announce()/announce_background() private-channel logging and for delivering
 watchlist alert tells; all left as no-ops when unset (e.g. bot not yet
 connected, or pure API/test usage).
@@ -73,7 +73,7 @@ class MarketService:
     scraper: AutoTrackScraper = field(default_factory=AutoTrackScraper)
     chat: ChatSink = field(default_factory=ChatSink)
 
-    # -- announce/log (Market.php:451-519) -----------------------------------
+    # -- announce/log ----------------------------------------------------
 
     async def announce(self, player: str, action: str, aoid: int | None = None) -> None:
         if not await self.settings.get_bool("LogToPrivateChannel"):
@@ -106,7 +106,7 @@ class MarketService:
         await self.repo.log_action(player, action, aoid)
         await self.announce(player, action, aoid)
 
-    # -- registration (Market.php:336-414) -----------------------------------
+    # -- registration ----------------------------------------------------
 
     async def is_registered(self, player: str) -> bool:
         return await self.repo.is_registered(player)
@@ -124,7 +124,7 @@ class MarketService:
         await self.announce(player, "unregister")
         return removed
 
-    # -- tracking (Market.php:777-793) ---------------------------------------
+    # -- tracking ---------------------------------------------------------
 
     async def watch_item(self, aoid: int, name: str, ql: int, icon: int | None, auto_tracked: bool = False) -> bool:
         is_new = await self.repo.upsert_watch(aoid, name, ql, icon, auto_tracked=auto_tracked)
@@ -135,7 +135,7 @@ class MarketService:
     async def untrack_all(self) -> int:
         return await self.repo.clear_watch()
 
-    # -- subscriptions (Market.php:800-922) ----------------------------------
+    # -- subscriptions ----------------------------------------------------
 
     async def subscribe(self, player: str, aoid: int) -> Item:
         item = await self.aodb.get_item(aoid)
@@ -152,7 +152,7 @@ class MarketService:
             raise SubscriptionLimitError(limit)
 
         # market_subscriptions.aoid FKs to market_watch.aoid (a deliberate
-        # tightening vs. Market.php's looser schema), so the watch row must
+        # tightening of the original schema), so the watch row must
         # exist before the subscription can reference it.
         await self.watch_item(aoid, item.name, item.ql, item.icon)
         await self.repo.add_subscription(player, aoid)
@@ -182,7 +182,7 @@ class MarketService:
     async def list_watchlist(self, player: str):
         return await self.repo.list_subscriptions(player)
 
-    # -- filters (Market.php:929-1031) ---------------------------------------
+    # -- filters ----------------------------------------------------------
 
     async def _require_subscription(self, player: str, aoid: int):
         sub = await self.repo.get_subscription(player, aoid)
@@ -213,7 +213,7 @@ class MarketService:
     async def get_filter(self, player: str, aoid: int):
         return await self._require_subscription(player, aoid)
 
-    # -- stats/status (Market.php:1089-1123, 1801-1863) ----------------------
+    # -- stats/status ------------------------------------------------------
 
     async def user_stats(self, player: str):
         total, first_seen = await self.repo.user_action_summary(player)
@@ -244,7 +244,7 @@ class MarketService:
     async def status_details(self, limit: int = 500, offset: int = 0):
         return await self.repo.list_watch(limit=limit, offset=offset)
 
-    # -- polling (Market.php:1450-1502) --------------------------------------
+    # -- polling -----------------------------------------------------------
 
     async def poll_market(self) -> PollSummary:
         now = datetime.now(UTC)
@@ -299,7 +299,7 @@ class MarketService:
             anchor_buy_count=anchor_buy_count,
         )
 
-    # -- new-order detection & alerts (Market.php:1512-1650) -----------------
+    # -- new-order detection & alerts ------------------------------------
 
     async def _detect_new_orders(self, aoid: int, orders: Orders, item_name: str) -> None:
         fingerprint_map: dict[str, NewOrder] = {}
@@ -388,14 +388,14 @@ class MarketService:
         return "\n".join(lines)
 
     async def deliver_pending_alerts(self, player: str) -> int:
-        """Called once a subscriber logs back on (Market.php::notify(), fired by
+        """Called once a subscriber logs back on (fired by
         the framework's logon-notify hook)."""
         alerts = await self.repo.pop_pending_alerts(player)
         for alert in alerts:
             await self._send_tell(player, alert.message)
         return len(alerts)
 
-    # -- auto-track resync (Market.php:1705-1799) ----------------------------
+    # -- auto-track resync -------------------------------------------------
 
     async def sync_top_traded_items(self) -> AutoTrackSummary | None:
         if not await self.settings.get_bool("AutoTrackEnabled"):
