@@ -117,7 +117,7 @@ version failing doesn't block the others from reporting).
 | 3.11 | ![lint 3.11](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.11.json) | ![tests 3.11](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.11.json) |
 | 3.12 | ![lint 3.12](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.12.json) | ![tests 3.12](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.12.json) |
 | 3.13 | ![lint 3.13](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.13.json) | ![tests 3.13](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.13.json) |
-| 3.14 (required) | ![lint 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json) | ![tests 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json) |
+| 3.14 (supported) | ![lint 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json) | ![tests 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json) |
 | 3.15.0-rc.1 | ![lint 3.15](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.15.0-rc.1.json) | ![tests 3.15](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.15.0-rc.1.json) |
 
 These reflect the most recent push to `main` (each matrix leg in
