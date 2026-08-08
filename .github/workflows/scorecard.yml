@@ -63,27 +63,23 @@ jobs:
           #   - `publish_results` will always be set to `false`, regardless
           #     of the value entered here.
           # Only publish for the canonical main-branch analysis (push/
-          # schedule/branch_protection_rule) -- not for pull_request runs,
-          # which only exist to surface findings via the SARIF artifact
-          # below (see that step's comment for why code-scanning upload
-          # was dropped).
+          # schedule/branch_protection_rule) -- not for pull_request runs.
           publish_results: ${{ github.event_name != 'pull_request' }}
 
           # (Optional) Uncomment file_mode if you have a .gitattributes with files marked export-ignore
           # file_mode: git
 
-      # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
-      # format to the repository Actions tab.
-      #
-      # NOT also uploading to the code-scanning dashboard here (as GitHub's
-      # own starter template suggests) -- github/codeql-action/upload-sarif
-      # is a monorepo-subdirectory action, and Scorecard's own
-      # publish_results workflow-verification step (Sigstore/rekor-based)
-      # rejects any SHA pinned for it as an "imposter commit" no matter
-      # which real release commit it's pinned to, which broke
-      # publish_results entirely. Trivy and CodeQL already report to this
-      # repo's code-scanning dashboard separately, so nothing is lost by
-      # relying on the SARIF artifact + the OpenSSF-published score instead.
+      # Upload the results as artifacts. This workflow deliberately does
+      # NOT also upload straight to the code-scanning dashboard here (as
+      # GitHub's own starter template suggests) -- github/codeql-action is
+      # a monorepo, and referencing its upload-sarif subdirectory action
+      # anywhere in *this* workflow file makes publish_results' own
+      # Sigstore/rekor-based workflow-verification reject the run as an
+      # "imposter commit", regardless of which real release commit it's
+      # pinned to. The actual upload happens from scorecard-upload.yml
+      # instead, a separate workflow file that downloads this artifact
+      # after the fact -- keeping codeql-action out of the file
+      # publish_results verifies is what lets both coexist.
       - name: "Upload artifact"
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
