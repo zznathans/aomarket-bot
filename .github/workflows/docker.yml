@@ -6,16 +6,14 @@ on:
   # workflow run as the semantic-release step that cuts the version tag
   # (see the comment there for why it's not a separate tag-triggered
   # workflow). There's no "latest floating on main" image.
+  #
+  # No path filter: this job's own name is a required status check in
+  # the branch ruleset, and a required check that never runs (because a
+  # PR only touched, say, README.md or charts/**) leaves GitHub treating
+  # it as permanently pending -- blocking merge even with every other
+  # check green. The build itself is cheap (~1 min), so running it on
+  # every PR is worth it to keep that check meaningful.
   pull_request:
-    paths:
-      - .github/workflows/**
-      - Dockerfile
-      - .dockerignore
-      - docker-entrypoint.sh
-      - src/**
-      - pyproject.toml
-      - migrations/**
-      - alembic.ini
 
 concurrency:
   group: docker-${{ github.workflow }}-${{ github.ref }}
