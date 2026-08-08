@@ -14,6 +14,14 @@ RUN pip install --no-cache-dir --prefix=/install .
 
 FROM python:3.14-slim AS runtime
 
+# Baked into the Dockerfile (rather than relying solely on
+# docker/metadata-action's build-time --label flags) so it survives paths
+# that don't go through that action -- notably the docker-slim rebuild in
+# release.yml, which reconstructs the image from observed runtime
+# behavior and is more likely to preserve labels that were already part
+# of the original image config than ones applied externally at push time.
+LABEL org.opencontainers.image.description="Standalone Python AO market-tracking bot: FastAPI control API, asyncio AO chat client, PostgreSQL."
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends tini \
     && rm -rf /var/lib/apt/lists/* \
