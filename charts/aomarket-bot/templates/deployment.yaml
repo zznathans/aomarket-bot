@@ -17,7 +17,7 @@ spec:
       serviceAccountName: {{ .Release.Name }}-serviceaccount
       containers:
         - name: aomarket-bot
-          image: "{{ .Values.aomarketBot.image.repository }}:{{ .Values.aomarketBot.image.tag }}"
+          image: "{{ .Values.aomarketBot.image.repository }}:{{ .Values.aomarketBot.image.tag }}{{ if eq .Values.aomarketBot.image.variant "slim" }}-slim{{ end }}"
           ports:
             - containerPort: 8000
           env:
