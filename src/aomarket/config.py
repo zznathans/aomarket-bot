@@ -50,6 +50,13 @@ class AppConfig(BaseSettings):
     # taking effect.
     ao_owner_character: str = ""
 
+    # Server-side secret mixed into API key hashing (PBKDF2-HMAC-SHA256) --
+    # an attacker who steals only the database still can't brute-force
+    # tokens without this too. Leave blank to hash without a pepper (still
+    # PBKDF2-hardened, just without that extra layer). Changing this
+    # invalidates every previously-issued key.
+    api_key_pepper: str = ""
+
     aodb_api_url: str = "https://aodb-api.ao.yeetbox.net"
     gmi_api_url: str = "https://gmi.nadybot.org"
 

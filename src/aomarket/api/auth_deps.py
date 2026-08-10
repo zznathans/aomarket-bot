@@ -15,10 +15,12 @@ API_KEY_HEADER = "X-Api-Key"
 
 
 async def get_auth_service(request: Request, session: AsyncSession = Depends(get_db_session)) -> AuthService:
+    config = request.app.state.config
     return AuthService(
         repo=ApiKeyRepo(session),
         market_repo=MarketRepo(session),
-        owner_character=request.app.state.config.ao_owner_character,
+        owner_character=config.ao_owner_character,
+        pepper=config.api_key_pepper,
     )
 
 

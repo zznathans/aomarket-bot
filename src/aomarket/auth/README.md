@@ -13,10 +13,16 @@ package the same way [`aochat/`](../aochat/README.md)/
   ([`api/auth_deps.py`](../api/README.md)) call into.
   - `generate_key(player)` — auto-registers `player` if needed, revokes
     any existing active key(s) (one active key per player, enforced here
-    rather than at the DB level), mints a new `aomk_<random>` token,
-    stores its SHA-256 hash (never the raw token) plus a short clear-text
-    prefix (`ApiKeyRepo`, [`db/`](../db/README.md)) for display/audit,
-    and returns the raw token — the only time it's ever visible.
+    rather than at the DB level), mints a new `aomk_<random>` token
+    (192 bits of randomness — never user-chosen), stores its
+    PBKDF2-HMAC-SHA256 hash (never the raw token; `AppConfig.api_key_pepper`
+    is mixed in as a constant server-side pepper, same for every key — a
+    per-key salt isn't meaningful here since this is a lookup-by-hash
+    scheme, and the entropy in every token already makes rainbow-table
+    precomputation infeasible regardless of salting) plus a short
+    clear-text prefix (`ApiKeyRepo`, [`db/`](../db/README.md)) for
+    display/audit, and returns the raw token — the only time it's ever
+    visible.
   - `authenticate(raw_token)` — hash lookup, `None` if missing/revoked.
     Resolves `ApiKeyPrincipal.is_admin` to `True` if the key's player
     matches `AppConfig.ao_owner_character`, or if `MarketUser.is_admin`

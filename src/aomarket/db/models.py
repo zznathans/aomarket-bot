@@ -115,8 +115,8 @@ class ApiKey(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     player: Mapped[str] = mapped_column(Text, ForeignKey("market_users.player", ondelete="CASCADE"), nullable=False)
-    # SHA-256 hex digest of the raw token -- the raw token itself is never
-    # stored, only shown once at generation time.
+    # PBKDF2-HMAC-SHA256 hex digest of the raw token -- the raw token
+    # itself is never stored, only shown once at generation time.
     key_hash: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     # First ~12 chars of the raw token, kept in the clear -- display/audit
     # only (e.g. "your key aomk_a1b2c3d4... was used"), never sufficient to

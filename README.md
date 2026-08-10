@@ -70,6 +70,7 @@ Every setting is an environment variable, loaded by `AppConfig`
 | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | *(blank)* | Alternate way to configure the database, for setups (e.g. an operator-managed Postgres cluster) that hand out a per-role username/password Secret rather than a single connection string. Setting `DB_HOST` composes `DATABASE_URL` from these instead of using it directly. |
 | `AO_LOGIN`, `AO_PASSWORD`, `AO_CHARACTER` | *(blank)* | Leave all blank to run in API-only mode. |
 | `AO_OWNER_CHARACTER` | *(blank)* | Player always treated as admin for API key purposes (see Authentication below), regardless of `MarketUser.is_admin`. Bootstraps the first admin; leave blank to require setting `is_admin` directly instead. |
+| `API_KEY_PEPPER` | *(blank)* | Server-side secret mixed into API key hashing. Leave blank to hash without one (keys are still PBKDF2-hardened either way). Changing this invalidates every previously-issued key. |
 | `AO_CHAT_SERVER` | `chat.d1.funcom.com` | |
 | `AO_CHAT_PORT` | `7105` | |
 | `AODB_API_URL` | `https://aodb-api.ao.yeetbox.net` | Item lookup/search service. |

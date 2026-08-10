@@ -85,6 +85,7 @@ class MarketBot:
                 repo=ApiKeyRepo(session),
                 market_repo=MarketRepo(session),
                 owner_character=self.config.ao_owner_character,
+                pepper=self.config.api_key_pepper,
             )
         finally:
             await session.close()

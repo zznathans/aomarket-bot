@@ -26,7 +26,7 @@ else in the app talks to instead of touching the database directly.
   once at process startup ([`main.py`](../../main.py)) so the poll/
   auto-track loops always have values to read.
 - **`api_key_repo.py`** — `ApiKeyRepo`: create/lookup-by-hash/revoke/list
-  over the `api_keys` table. Only ever holds a SHA-256 hash, never a raw
+  over the `api_keys` table. Only ever holds a PBKDF2 hash, never a raw
   token.
 
 ## Migrations
