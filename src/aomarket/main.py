@@ -51,7 +51,19 @@ def main() -> None:
             password=config.ao_password,
             character_name=config.ao_character,
         )
-        bot = MarketBot(config, sessionmaker, aodb, gmi, scraper, chat_client)
+        # A separate engine/pool, not the one above -- the bot thread runs
+        # its own event loop (bot_thread_main), and asyncpg connections are
+        # bound to whichever loop opened them. Sharing one pool between
+        # uvicorn's loop and the bot's loop means a connection opened under
+        # one gets checked out and used under the other, which asyncpg
+        # rejects at the protocol level ("attached to a different loop"),
+        # surfacing as 500s from /bot/poll:trigger and friends. Created
+        # here (not inside bot_thread_main) so it exists before the thread
+        # starts; create_async_engine itself is lazy, so this doesn't touch
+        # the bot's loop before it's set as current there.
+        bot_engine = make_engine(config.database_url)
+        bot_sessionmaker = make_sessionmaker(bot_engine)
+        bot = MarketBot(config, bot_sessionmaker, aodb, gmi, scraper, chat_client)
         bot_handle = BotHandle()
         thread = threading.Thread(target=bot_thread_main, args=(bot_handle, bot), daemon=False)
         thread.start()
