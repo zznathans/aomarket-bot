@@ -1,18 +1,26 @@
-FROM python:3.14-slim AS builder
+# Pinned by digest (not just the "3.14-slim" tag) -- a tag is mutable and
+# can point at a different image tomorrow; the digest can't. Re-resolve with
+# `docker manifest inspect python:3.14-slim` and update both FROM lines
+# below when intentionally bumping the base image.
+FROM python:3.14-slim@sha256:a7fb1e634c4a578f9e0bd6327f11a3cde11b7a9395f48e24360c0988bcc5c2bc AS builder
 
 WORKDIR /build
 
-COPY pyproject.toml ./
+COPY pyproject.toml requirements.txt ./
 COPY src ./src
 
-# --prefix installs aomarket-bot and its dependencies without pulling pip/
-# setuptools/wheel into the target tree -- those stay in the builder's own
+# --require-hashes covers everything requirements.txt pulls from PyPI; the
+# local package itself (this checkout, not a fetched artifact) has no
+# meaningful hash to give it, so it's a separate --no-deps install instead
+# of one `pip install .` covering both. --prefix installs into a tree
+# without pip/setuptools/wheel themselves -- those stay in the builder's own
 # base install and never reach the runtime image below, closing off a real
 # CVE surface (pip itself has had HIGH-severity CVEs) that a runtime image
 # has no actual use for once dependencies are installed.
-RUN pip install --no-cache-dir --prefix=/install .
+RUN pip install --no-cache-dir --require-hashes --prefix=/install -r requirements.txt \
+    && pip install --no-cache-dir --no-deps --prefix=/install .
 
-FROM python:3.14-slim AS runtime
+FROM python:3.14-slim@sha256:a7fb1e634c4a578f9e0bd6327f11a3cde11b7a9395f48e24360c0988bcc5c2bc AS runtime
 
 # Baked into the Dockerfile (rather than relying solely on
 # docker/metadata-action's build-time --label flags) so it survives paths

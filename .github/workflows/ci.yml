@@ -9,6 +9,27 @@ permissions:
   contents: read
 
 jobs:
+  lockfile-check:
+    name: requirements*.txt match pyproject.toml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+
+      - name: Regenerate and diff against committed lockfiles
+        run: |
+          set -euo pipefail
+          cp requirements.txt /tmp/requirements.txt.committed
+          cp requirements-dev.txt /tmp/requirements-dev.txt.committed
+          # Regenerated in place (same -o path as the header comment records)
+          # so that comment matches exactly rather than showing a spurious
+          # diff on the invocation path alone.
+          uv pip compile pyproject.toml --universal --generate-hashes -o requirements.txt
+          uv pip compile pyproject.toml --extra dev --universal --generate-hashes -o requirements-dev.txt
+          diff -u /tmp/requirements.txt.committed requirements.txt
+          diff -u /tmp/requirements-dev.txt.committed requirements-dev.txt
+
   lint:
     name: Lint (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -26,7 +47,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - run: pip install -e ".[dev]"
+      # Two steps rather than one `pip install -e ".[dev]"`: --require-hashes
+      # refuses to run at all if *any* requirement it's installing lacks a
+      # hash, and the local package itself (an editable install of this
+      # checkout, not a fetched artifact) has no meaningful hash to give it.
+      # requirements-dev.txt pins/hashes everything that *is* fetched from
+      # PyPI; regenerate it with `uv pip compile pyproject.toml --extra dev
+      # --universal --generate-hashes -o requirements-dev.txt` after any
+      # dependency change.
+      - run: pip install --require-hashes -r requirements-dev.txt
+      - run: pip install --no-deps -e .
 
       - run: ruff check src tests
 
@@ -88,7 +118,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - run: pip install -e ".[dev]"
+      # Two steps rather than one `pip install -e ".[dev]"`: --require-hashes
+      # refuses to run at all if *any* requirement it's installing lacks a
+      # hash, and the local package itself (an editable install of this
+      # checkout, not a fetched artifact) has no meaningful hash to give it.
+      # requirements-dev.txt pins/hashes everything that *is* fetched from
+      # PyPI; regenerate it with `uv pip compile pyproject.toml --extra dev
+      # --universal --generate-hashes -o requirements-dev.txt` after any
+      # dependency change.
+      - run: pip install --require-hashes -r requirements-dev.txt
+      - run: pip install --no-deps -e .
 
       # Tests build their schema directly from the SQLAlchemy models
       # (Base.metadata.create_all), bypassing Alembic entirely -- this step
