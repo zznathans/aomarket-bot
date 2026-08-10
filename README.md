@@ -7,6 +7,7 @@
 [![Scorecard](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml)
 [![Upload Scorecard SARIF](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard-upload.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard-upload.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/zznathans/aomarket-bot/badge)](https://scorecard.dev/viewer/?uri=github.com/zznathans/aomarket-bot)
+[![CII Best Practices](https://www.bestpractices.dev/projects/13996/badge)](https://www.bestpractices.dev/projects/13996)
 [![Commit Lint](https://github.com/zznathans/aomarket-bot/actions/workflows/commitlint.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/commitlint.yml)
 [![Dependency review](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml)
 [![Pull Request Labeler](https://github.com/zznathans/aomarket-bot/actions/workflows/labeler.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/labeler.yml)
@@ -115,7 +116,6 @@ version failing doesn't block the others from reporting).
 
 | Version | Lint | Tests |
 | --- | --- | --- |
-| 3.11 | ![lint 3.11](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.11.json) | ![tests 3.11](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.11.json) |
 | 3.12 | ![lint 3.12](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.12.json) | ![tests 3.12](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.12.json) |
 | 3.13 | ![lint 3.13](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.13.json) | ![tests 3.13](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.13.json) |
 | 3.14 (supported) | ![lint 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json) | ![tests 3.14](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json) |
