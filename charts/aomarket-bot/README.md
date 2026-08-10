@@ -1,55 +1,41 @@
 # aomarket-bot
 
-Helm chart to deploy [aomarket-bot](../../README.md) — the chart lives in
-this repo rather than a separate one, alongside the code it deploys.
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
-## Install
+Helm chart for aomarket-bot
 
-```bash
-helm repo add aomarket-bot https://marketbot.ao.yeetbox.net/
-helm repo update
-helm install aomarket-bot aomarket-bot/aomarket-bot \
-  --set aomarketBot.secret.databaseUrl="postgresql+asyncpg://user:pass@host:5432/dbname"
-```
+## Values
 
-The chart is published on every release, from the same `gh-pages` branch
-this repo's GitHub Pages site is served from — see
-[`.github/workflows/release.yml`](../../.github/workflows/release.yml)'s
-`publish-chart` job.
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| aomarketBot.ao.character | string | `""` | password below) to run API-only, with no live AO chat connection. |
+| aomarketBot.ao.chatPort | int | `7105` | AO chat server port. |
+| aomarketBot.ao.chatServer | string | `"chat.d1.funcom.com"` | AO chat server hostname. |
+| aomarketBot.ao.login | string | `""` | an identifier, not a credential; only the password below is. |
+| aomarketBot.aodbApiUrl | string | `"https://aodb-api.ao.yeetbox.net"` | Base URL for the aodb-api item-lookup service. |
+| aomarketBot.createSecret | bool | `true` | other app in this environment's ArgoCD setup. |
+| aomarketBot.database.existingSecret | string | `""` | one a Postgres operator generated) with username/password keys. |
+| aomarketBot.database.existingSecretPasswordKey | string | `"password"` |  |
+| aomarketBot.database.existingSecretUserKey | string | `"username"` |  |
+| aomarketBot.database.host | string | `""` | Only used when mode is "parts". |
+| aomarketBot.database.mode | string | `"url"` | already managed by the operator, not by this chart). |
+| aomarketBot.database.name | string | `""` |  |
+| aomarketBot.database.port | int | `5432` |  |
+| aomarketBot.externalSecret | object | `{"refreshInterval":"1h","remoteKey":{"aoPassword":"aomarket-bot-ao-password","databaseUrl":"aomarket-bot-database-url"},"secretStoreRef":{"kind":"ClusterSecretStore","name":"gcp-clusterstore"}}` | Only used when createSecret is false. |
+| aomarketBot.externalSecret.remoteKey.aoPassword | string | `"aomarket-bot-ao-password"` | Remote secret key holding the AO account password. |
+| aomarketBot.externalSecret.remoteKey.databaseUrl | string | `"aomarket-bot-database-url"` | connection string. Unused when database.mode is "parts". |
+| aomarketBot.extraObjects | list | `[]` | Raw Kubernetes objects to render alongside chart-managed resources. |
+| aomarketBot.gmiApiUrl | string | `"https://gmi.nadybot.org"` | Base URL for the GMI live-order API. |
+| aomarketBot.image.repository | string | `"ghcr.io/zznathans/aomarket-bot"` | Container image registry and repository for the aomarket-bot image. |
+| aomarketBot.image.tag | string | `"1.0.0"` | pipeline never publishes a floating/latest tag. |
+| aomarketBot.image.variant | string | `"regular"` | "slim" if you've specifically validated it for your workload. |
+| aomarketBot.imagePullSecrets | list | `[]` | is public today). |
+| aomarketBot.logLevel | string | `"INFO"` | Log level (DEBUG/INFO/WARNING/ERROR). |
+| aomarketBot.replicaCount | int | `1` | credentials below are left blank (API-only mode, no chat session). |
+| aomarketBot.resources | object | `{"limits":{"cpu":"250m","memory":"256Mi"},"requests":{"cpu":"50m","memory":"128Mi"}}` | Resource requests and limits for the app container. |
+| aomarketBot.secret.aoPassword | string | `""` | AO account password. Leave blank for API-only mode. |
+| aomarketBot.secret.databaseUrl | string | `""` | point at a real Postgres. Unused when database.mode is "parts". |
+| aomarketBot.service.port | int | `80` | Port the Service listens on and forwards to the container's 8000. |
 
-## Requirements
-
-- An **external PostgreSQL database** — this chart does not bundle or
-  manage a database. Provide a working `DATABASE_URL` via
-  `aomarketBot.secret.databaseUrl` (or an `ExternalSecret`, see below).
-- AO account credentials are optional. Leave `aomarketBot.ao.character`
-  and the `secret.aoLogin`/`secret.aoPassword` values blank to run in
-  **API-only mode** (no live AO chat connection) — see
-  [`src/aomarket/README.md`](../../src/aomarket/README.md) for what that
-  mode does and doesn't do.
-
-## Key values
-
-| Value | Default | Notes |
-| --- | --- | --- |
-| `aomarketBot.replicaCount` | `1` | Keep at 1 — see the warning inline in `values.yaml`: the bot thread holds a single AO chat session, and there's no separate migration Job. |
-| `aomarketBot.image.repository` / `.tag` | `ghcr.io/zznathans/aomarket-bot` / `1.0.0` | Always a real released semver; the pipeline never publishes a floating/`latest` tag. |
-| `aomarketBot.image.variant` | `"regular"` | `"regular"` or `"slim"`. Every release publishes both. **The `slim` variant is built by dynamically analyzing the regular image and stripping anything not observed** — smaller, but can be less stable if a rarely-exercised code path needs something that got stripped. Only switch if you've validated it for your workload. |
-| `aomarketBot.createSecret` | `true` | `true` renders a plain `Secret` from `aomarketBot.secret.*`. Set `false` to instead render an `ExternalSecret` from `aomarketBot.externalSecret.*` against a `ClusterSecretStore`. |
-| `aomarketBot.aodbApiUrl` / `.gmiApiUrl` | live defaults | Only change if you're pointing at different instances of these services. |
-
-See `values.yaml` for the complete, commented list.
-
-## What it renders
-
-- `Deployment` — single container, both liveness and readiness probes on
-  `/healthz` (not `/readyz` — that reflects AO chat connection state,
-  which stays false forever in API-only mode).
-- `Service`, `ServiceAccount`.
-- `Secret` or `ExternalSecret` (mutually exclusive, gated by
-  `createSecret`) for `DATABASE_URL`/`AO_LOGIN`/`AO_PASSWORD`.
-- `extraObjects` passthrough for anything else you want rendered
-  alongside the chart's own resources.
-
-There's no ArgoCD `Application` wiring in this chart — just the chart
-itself, for now.
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)

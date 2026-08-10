@@ -37,16 +37,32 @@ spec:
               value: {{ .Values.aomarketBot.gmiApiUrl | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.aomarketBot.logLevel | quote }}
+            {{- if eq .Values.aomarketBot.database.mode "parts" }}
+            - name: DB_HOST
+              value: {{ required "aomarketBot.database.host is required when database.mode is \"parts\"" .Values.aomarketBot.database.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.aomarketBot.database.port | quote }}
+            - name: DB_NAME
+              value: {{ required "aomarketBot.database.name is required when database.mode is \"parts\"" .Values.aomarketBot.database.name | quote }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "aomarketBot.database.existingSecret is required when database.mode is \"parts\"" .Values.aomarketBot.database.existingSecret }}
+                  key: {{ .Values.aomarketBot.database.existingSecretUserKey }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.aomarketBot.database.existingSecret }}
+                  key: {{ .Values.aomarketBot.database.existingSecretPasswordKey }}
+            {{- else }}
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-secret
                   key: database-url
+            {{- end }}
             - name: AO_LOGIN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-secret
-                  key: ao-login
+              value: {{ .Values.aomarketBot.ao.login | quote }}
             - name: AO_PASSWORD
               valueFrom:
                 secretKeyRef:
