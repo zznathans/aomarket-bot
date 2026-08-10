@@ -1,17 +1,16 @@
 import asyncio
-import os
 import sys
 from logging.config import fileConfig
 from pathlib import Path
 
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from alembic import context
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from aomarket.config import load_config  # noqa: E402
 from aomarket.db.models import Base  # noqa: E402
 
 # this is the Alembic Config object, which provides
@@ -25,8 +24,11 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-if os.environ.get("DATABASE_URL"):
-    config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+# Goes through AppConfig rather than reading DATABASE_URL directly off
+# os.environ -- that would miss the DB_HOST/DB_USER/DB_PASSWORD/DB_NAME
+# composition it does for setups (e.g. an operator-managed Postgres
+# cluster) that don't set DATABASE_URL at all.
+config.set_main_option("sqlalchemy.url", load_config().database_url)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
