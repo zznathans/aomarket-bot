@@ -34,6 +34,7 @@ class MarketUser(Base):
 
     player: Mapped[str] = mapped_column(Text, primary_key=True)
     registered_at: Mapped[datetime] = mapped_column(TZ_TIMESTAMP, server_default=func.now(), nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, server_default="false", nullable=False)
 
 
 class MarketWatch(Base):
@@ -106,6 +107,24 @@ class MarketUserAction(Base):
     action: Mapped[str] = mapped_column(Text, nullable=False)
     aoid: Mapped[int | None] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = mapped_column(TZ_TIMESTAMP, server_default=func.now(), nullable=False)
+
+
+class ApiKey(Base):
+    __tablename__ = "api_keys"
+    __table_args__ = (Index("ix_api_keys_player", "player"),)
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    player: Mapped[str] = mapped_column(Text, ForeignKey("market_users.player", ondelete="CASCADE"), nullable=False)
+    # PBKDF2-HMAC-SHA256 hex digest of the raw token -- the raw token
+    # itself is never stored, only shown once at generation time.
+    key_hash: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
+    # First ~12 chars of the raw token, kept in the clear -- display/audit
+    # only (e.g. "your key aomk_a1b2c3d4... was used"), never sufficient to
+    # authenticate on its own.
+    prefix: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TZ_TIMESTAMP, server_default=func.now(), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(TZ_TIMESTAMP)
+    last_used_at: Mapped[datetime | None] = mapped_column(TZ_TIMESTAMP)
 
 
 class Setting(Base):

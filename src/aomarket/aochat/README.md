@@ -10,16 +10,22 @@ tells and send replies.
   reads one length-prefixed packet at a time, writes one packet at a
   time. No login or dispatch logic lives here.
 - **`packet.py`** — Packet type IDs and the (de)serialization schemas for
-  the subset of the AO chat protocol this bot actually needs. Only tells,
-  privgroup messages, and the login sequence are implemented — guild,
-  duel, group chat, and friends lists are out of scope.
+  the subset of the AO chat protocol this bot actually needs. Tells,
+  privgroup messages, the login sequence, and `AOCP_CLIENT_NAME`
+  (server-pushed id→name resolution, decoded but never requested by the
+  client) are implemented — guild, duel, group chat, and friends/buddy
+  list management are out of scope.
 - **`crypto.py`** — Diffie-Hellman key exchange and TEA encryption used
   during login, as required by the AO chat server before it will accept
   `LOGIN_REQUEST`.
 - **`client.py`** — `AOChatClient`: the high-level session. Drives the
   login sequence (`LOGIN_SEED` → `LOGIN_REQUEST` → `LOGIN_CHARLIST` →
   `LOGIN_SELECT` → `LOGIN_OK`), sends a keepalive ping every 60 seconds,
-  and dispatches inbound tells/privgroup messages to registered handlers.
+  dispatches inbound tells/privgroup messages to registered handlers, and
+  maintains an id→name cache (`name_for_id()`) populated as
+  `AOCP_CLIENT_NAME` packets arrive from the server — used to resolve a
+  tell sender's actual character name rather than just their numeric id
+  (see [`bot/README.md`](../bot/README.md)).
 - **`types.py`** — Plain dataclasses for the parsed values handlers
   receive (`InboundTell`, `InboundPrivgroupMessage`, `BuddyStatus`,
   `CharacterInfo`).

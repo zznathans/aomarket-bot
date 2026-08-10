@@ -70,7 +70,7 @@ def main() -> None:
     else:
         log.warning("ao_credentials_not_set", detail="starting in API-only mode, no AO chat connection")
 
-    app = create_app(sessionmaker, aodb, gmi, scraper, bot_handle)
+    app = create_app(sessionmaker, aodb, gmi, scraper, config, bot_handle)
     uvicorn.run(app, host=config.api_host, port=config.api_port)
 
 

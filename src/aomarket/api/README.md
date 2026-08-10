@@ -7,10 +7,10 @@ bot thread directly.
 ## Files
 
 - **`app.py`** — `create_app()`: wires the FastAPI app, stashes shared
-  dependencies (`sessionmaker`, `aodb`, `gmi`, `scraper`, `bot_handle`)
-  on `app.state`, registers a single exception handler that maps every
-  [`MarketError`](../market/README.md) subclass to an HTTP status code,
-  and mounts each router in `routes/`.
+  dependencies (`sessionmaker`, `aodb`, `gmi`, `scraper`, `config`,
+  `bot_handle`) on `app.state`, registers a single exception handler that
+  maps every [`MarketError`](../market/README.md) subclass to an HTTP
+  status code, and mounts each router in `routes/`.
 - **`deps.py`** — FastAPI dependency providers, most importantly
   `get_service()` (builds a per-request `MarketService`, including a
   `ChatSink` that's a no-op unless the bot thread is up) and
@@ -18,6 +18,13 @@ bot thread directly.
   coroutine on the [bot thread](../bot/README.md)'s event loop via
   `asyncio.run_coroutine_threadsafe`, then awaits the result from
   FastAPI's own loop.
+- **`auth_deps.py`** — API key enforcement, kept separate from `deps.py`
+  since it's a distinct, security-sensitive concern. `require_player_key`
+  (binds a route's own `{player}` path parameter to check the key is
+  scoped to that player, or is an admin) and `require_admin_key`, both
+  attached to routes via `dependencies=[Depends(...)]`. See
+  [`auth/README.md`](../auth/README.md) for the issuance/verification
+  logic itself.
 - **`schemas.py`** — Pydantic request/response models for every route.
 - **`routes/`** — One module per resource:
   - `health.py` — `/healthz` (always 200, status reflected in the body)
@@ -35,6 +42,11 @@ bot thread directly.
   - `bot.py` — bot connection status, `poll:trigger`/`autotrack:trigger`
     to force a cycle on demand, and `tell` to send a chat message
     directly.
+
+  Every write route (`POST`/`PUT`/`DELETE`, except player `:register`)
+  requires `require_player_key` or `require_admin_key` from
+  `auth_deps.py` — see the root README's Authentication section for the
+  scoping rules.
 
 ## How it's used
 

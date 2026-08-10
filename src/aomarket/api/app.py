@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from aomarket.aodb.client import AodbClient
 from aomarket.autotrack.scraper import AutoTrackScraper
 from aomarket.bot.runner import BotHandle
+from aomarket.config import AppConfig
 from aomarket.gmi.client import GmiClient
 from aomarket.market.errors import (
     AlreadyRegisteredError,
@@ -42,6 +43,7 @@ def create_app(
     aodb: AodbClient,
     gmi: GmiClient,
     scraper: AutoTrackScraper,
+    config: AppConfig,
     bot_handle: BotHandle | None = None,
 ) -> FastAPI:
     app = FastAPI(title="aomarket-bot", version="0.1.0")
@@ -49,6 +51,7 @@ def create_app(
     app.state.aodb = aodb
     app.state.gmi = gmi
     app.state.scraper = scraper
+    app.state.config = config
     app.state.bot_handle = bot_handle
 
     @app.exception_handler(MarketError)

@@ -40,6 +40,23 @@ class AppConfig(BaseSettings):
     ao_chat_server: str = "chat.d1.funcom.com"
     ao_chat_port: int = 7105
 
+    # Player always treated as admin for API key purposes, regardless of
+    # MarketUser.is_admin -- bootstraps the first admin. Leave blank to
+    # disable owner-bootstrap admin (MarketUser.is_admin is then the only
+    # path to admin). Chat-issued keys are scoped to whatever identity the
+    # bot resolved for that player (their name once AOCP_CLIENT_NAME has
+    # arrived, otherwise their numeric character id) -- set this to match
+    # whichever one applies for your account if owner-bootstrap isn't
+    # taking effect.
+    ao_owner_character: str = ""
+
+    # Server-side secret mixed into API key hashing (PBKDF2-HMAC-SHA256) --
+    # an attacker who steals only the database still can't brute-force
+    # tokens without this too. Leave blank to hash without a pepper (still
+    # PBKDF2-hardened, just without that extra layer). Changing this
+    # invalidates every previously-issued key.
+    api_key_pepper: str = ""
+
     aodb_api_url: str = "https://aodb-api.ao.yeetbox.net"
     gmi_api_url: str = "https://gmi.nadybot.org"
 

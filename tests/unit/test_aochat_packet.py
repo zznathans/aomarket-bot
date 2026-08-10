@@ -64,6 +64,14 @@ def test_encode_packet_and_decode_packet_full_round_trip():
     assert decoded.args[1] == b"hi"
 
 
+def test_decode_client_name():
+    payload = struct_pack_helper_client_name(555, b"Alice")
+    args = packet.decode_args(packet.AOCP_CLIENT_NAME, payload)
+
+    assert args[0] == 555
+    assert args[1] == b"Alice"
+
+
 def test_unknown_outbound_packet_type_raises():
     with pytest.raises(KeyError):
         packet.encode_args(9999, [])
@@ -75,3 +83,10 @@ def struct_pack_helper(packet_type: int, values: list) -> bytes:
 
     uid, online, btype = values
     return _struct.pack(">I", uid) + _struct.pack(">I", online) + _struct.pack(">H", len(btype)) + btype
+
+
+def struct_pack_helper_client_name(char_id: int, name: bytes) -> bytes:
+    # IS payload, mirroring what decode_args expects for CLIENT_NAME/CLIENT_LOOKUP.
+    import struct as _struct
+
+    return _struct.pack(">I", char_id) + _struct.pack(">H", len(name)) + name

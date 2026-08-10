@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from aomarket.api.auth_deps import require_player_key
 from aomarket.api.deps import get_service
 from aomarket.api.schemas import (
     BulkUnwatchIn,
@@ -27,7 +28,7 @@ async def register(player: str, service=Depends(get_service)):
     return RegisterOut(player=player, registered=True)
 
 
-@router.post("/{player}:unregister", response_model=UnregisterOut)
+@router.post("/{player}:unregister", response_model=UnregisterOut, dependencies=[Depends(require_player_key)])
 async def unregister(player: str, body: UnregisterIn, service=Depends(get_service)):
     if not body.confirm:
         raise HTTPException(status_code=400, detail="destructive action requires confirm=true")
@@ -41,26 +42,28 @@ async def get_watchlist(player: str, service=Depends(get_service)):
     return [SubscriptionOut.model_validate(s, from_attributes=True) for s in subs]
 
 
-@router.post("/{player}/watchlist/{aoid}", response_model=ItemOut)
+@router.post("/{player}/watchlist/{aoid}", response_model=ItemOut, dependencies=[Depends(require_player_key)])
 async def subscribe(player: str, aoid: int, service=Depends(get_service)):
     item = await service.subscribe(player, aoid)
     return ItemOut(aoid=item.aoid, name=item.name, ql=item.ql, icon=item.icon, description=item.description)
 
 
-@router.delete("/{player}/watchlist/{aoid}", status_code=204)
+@router.delete("/{player}/watchlist/{aoid}", status_code=204, dependencies=[Depends(require_player_key)])
 async def unsubscribe(player: str, aoid: int, service=Depends(get_service)):
     deleted = await service.unsubscribe(player, aoid)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"{player} is not watching aoid {aoid}")
 
 
-@router.post("/{player}/watchlist:bulk_delete", response_model=BulkUnwatchOut)
+@router.post(
+    "/{player}/watchlist:bulk_delete", response_model=BulkUnwatchOut, dependencies=[Depends(require_player_key)]
+)
 async def bulk_unsubscribe(player: str, body: BulkUnwatchIn, service=Depends(get_service)):
     removed, not_watched = await service.unsubscribe_bulk(player, body.aoids)
     return BulkUnwatchOut(removed=sorted(removed), not_watched=sorted(not_watched))
 
 
-@router.delete("/{player}/watchlist")
+@router.delete("/{player}/watchlist", dependencies=[Depends(require_player_key)])
 async def unsubscribe_all(player: str, body: UnregisterIn, service=Depends(get_service)):
     if not body.confirm:
         raise HTTPException(status_code=400, detail="destructive action requires confirm=true")
@@ -74,7 +77,9 @@ async def get_filter(player: str, aoid: int, service=Depends(get_service)):
     return SubscriptionOut.model_validate(sub, from_attributes=True)
 
 
-@router.put("/{player}/watchlist/{aoid}/filter", response_model=SubscriptionOut)
+@router.put(
+    "/{player}/watchlist/{aoid}/filter", response_model=SubscriptionOut, dependencies=[Depends(require_player_key)]
+)
 async def update_filter(player: str, aoid: int, body: FilterUpdate, service=Depends(get_service)):
     if body.price_spec is not None:
         await service.set_price_filter(player, aoid, body.price_spec)
@@ -84,7 +89,9 @@ async def update_filter(player: str, aoid: int, body: FilterUpdate, service=Depe
     return SubscriptionOut.model_validate(sub, from_attributes=True)
 
 
-@router.delete("/{player}/watchlist/{aoid}/filter", response_model=SubscriptionOut)
+@router.delete(
+    "/{player}/watchlist/{aoid}/filter", response_model=SubscriptionOut, dependencies=[Depends(require_player_key)]
+)
 async def clear_filter(player: str, aoid: int, service=Depends(get_service)):
     await service.clear_filter(player, aoid)
     sub = await service.get_filter(player, aoid)
