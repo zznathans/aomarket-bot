@@ -66,6 +66,7 @@ Every setting is an environment variable, loaded by `AppConfig`
 | Variable | Default | Notes |
 | --- | --- | --- |
 | `DATABASE_URL` | `postgresql+asyncpg://aomarket:aomarket@localhost:55432/aomarket` | SQLAlchemy/asyncpg connection string. |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | *(blank)* | Alternate way to configure the database, for setups (e.g. an operator-managed Postgres cluster) that hand out a per-role username/password Secret rather than a single connection string. Setting `DB_HOST` composes `DATABASE_URL` from these instead of using it directly. |
 | `AO_LOGIN`, `AO_PASSWORD`, `AO_CHARACTER` | *(blank)* | Leave all blank to run in API-only mode. |
 | `AO_CHAT_SERVER` | `chat.d1.funcom.com` | |
 | `AO_CHAT_PORT` | `7105` | |
