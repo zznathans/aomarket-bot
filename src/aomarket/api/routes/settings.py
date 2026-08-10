@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from aomarket.api.auth_deps import require_admin_key
 from aomarket.api.deps import get_service
 from aomarket.api.schemas import SettingOut, SettingUpdate
 from aomarket.db.settings_repo import UnknownSettingError
@@ -21,7 +22,7 @@ async def get_setting(key: str, service=Depends(get_service)):
     return SettingOut(key=key, value=value)
 
 
-@router.put("/{key}", response_model=SettingOut)
+@router.put("/{key}", response_model=SettingOut, dependencies=[Depends(require_admin_key)])
 async def update_setting(key: str, body: SettingUpdate, service=Depends(get_service)):
     try:
         await service.settings.set(key, body.value)

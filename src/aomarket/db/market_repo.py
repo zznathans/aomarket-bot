@@ -24,6 +24,9 @@ class MarketRepo:
     async def is_registered(self, player: str) -> bool:
         return await self._session.get(MarketUser, player) is not None
 
+    async def get_user(self, player: str) -> MarketUser | None:
+        return await self._session.get(MarketUser, player)
+
     async def register(self, player: str) -> None:
         self._session.add(MarketUser(player=player))
         await self._session.commit()

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from aomarket.api.auth_deps import require_admin_key
 from aomarket.api.deps import get_service
 from aomarket.api.schemas import ItemOut, WatchItemOut
 from aomarket.market.errors import UnknownItemError
@@ -21,7 +22,7 @@ async def get_watch(aoid: int, service=Depends(get_service)):
     return WatchItemOut.model_validate(row, from_attributes=True)
 
 
-@router.post("/{aoid}", response_model=ItemOut)
+@router.post("/{aoid}", response_model=ItemOut, dependencies=[Depends(require_admin_key)])
 async def start_watching(aoid: int, service=Depends(get_service)):
     item = await service.aodb.get_item(aoid)
     if item is None:
@@ -30,7 +31,7 @@ async def start_watching(aoid: int, service=Depends(get_service)):
     return ItemOut(aoid=item.aoid, name=item.name, ql=item.ql, icon=item.icon, description=item.description)
 
 
-@router.delete("/{aoid}", status_code=204)
+@router.delete("/{aoid}", status_code=204, dependencies=[Depends(require_admin_key)])
 async def stop_tracking(aoid: int, service=Depends(get_service)):
     deleted = await service.repo.delete_watch(aoid)
     if not deleted:

@@ -6,12 +6,17 @@ loops (poll and auto-track) that keep watched items up to date.
 ## Files
 
 - **`runner.py`** — `MarketBot` (owns the chat client, builds a fresh
-  `MarketService` per operation via `make_service()`), `BotHandle` (the
+  `MarketService` per operation via `make_service()`, and a fresh
+  `AuthService` via `make_auth_service()` — used by the `apikey` chat
+  commands, see [`auth/README.md`](../auth/README.md)), `BotHandle` (the
   *only* object shared between the FastAPI thread and the bot thread —
   `loop`/`bot` are published once after login, then read-only from the
   API side; `ready` is the memory barrier for that publication), and
   `bot_thread_main()`, the actual thread entry point: creates a fresh
-  event loop, logs in, then calls `run_forever()`.
+  event loop, logs in, then calls `run_forever()`. A tell's sender
+  identity (`_handle_tell`) is resolved to their character name via
+  `AOChatClient.name_for_id()` where possible, falling back to their
+  numeric character id if the server hasn't pushed that mapping yet.
 - **`scheduler.py`** — `poll_loop()` and `autotrack_loop()`: plain
   `asyncio.sleep` loops (no persisted-timer table) that re-read their
   interval [`Setting`](../db/README.md) every cycle, so a setting change

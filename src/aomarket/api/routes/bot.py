@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from aomarket.api.auth_deps import require_admin_key
 from aomarket.api.deps import call_on_bot, get_bot_handle, require_bot_ready
 from aomarket.api.schemas import BotStatusOut, TellIn
 from aomarket.bot.runner import BotHandle
@@ -20,21 +21,21 @@ async def bot_status(handle: BotHandle | None = Depends(get_bot_handle)):
     )
 
 
-@router.post("/poll:trigger")
+@router.post("/poll:trigger", dependencies=[Depends(require_admin_key)])
 async def trigger_poll(handle: BotHandle | None = Depends(get_bot_handle)):
     handle = require_bot_ready(handle)
     await call_on_bot(handle, handle.bot.force_poll_now)
     return {"triggered": True}
 
 
-@router.post("/autotrack:trigger")
+@router.post("/autotrack:trigger", dependencies=[Depends(require_admin_key)])
 async def trigger_autotrack(handle: BotHandle | None = Depends(get_bot_handle)):
     handle = require_bot_ready(handle)
     await call_on_bot(handle, handle.bot.force_autotrack_now)
     return {"triggered": True}
 
 
-@router.post("/tell")
+@router.post("/tell", dependencies=[Depends(require_admin_key)])
 async def send_tell(body: TellIn, handle: BotHandle | None = Depends(get_bot_handle)):
     handle = require_bot_ready(handle)
     await call_on_bot(handle, lambda: handle.bot.chat_client.send_tell_by_name(body.player, body.message))

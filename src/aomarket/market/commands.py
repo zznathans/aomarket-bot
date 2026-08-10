@@ -7,6 +7,7 @@ into chat-friendly text.
 
 import re
 
+from aomarket.auth.service import AuthService
 from aomarket.market import rendering
 from aomarket.market.errors import (
     AlreadyRegisteredError,
@@ -26,6 +27,9 @@ _PATTERNS = {
     "register": re.compile(_PREFIX + r"register\s*$", re.IGNORECASE),
     "unregister": re.compile(_PREFIX + r"unregister(?:\s+(confirm))?\s*$", re.IGNORECASE),
     "untrack_all": re.compile(_PREFIX + r"untrack\s+all(?:\s+(confirm))?\s*$", re.IGNORECASE),
+    "apikey_generate": re.compile(_PREFIX + r"apikey\s+generate\s*$", re.IGNORECASE),
+    "apikey_revoke": re.compile(_PREFIX + r"apikey\s+revoke(?:\s+(confirm))?\s*$", re.IGNORECASE),
+    "apikey_list": re.compile(_PREFIX + r"apikey\s+list\s*$", re.IGNORECASE),
     "status_details": re.compile(_PREFIX + r"status\s+details\s*$", re.IGNORECASE),
     "status": re.compile(_PREFIX + r"status\s*$", re.IGNORECASE),
     "watchlist": re.compile(_PREFIX + r"watchlist\s*$", re.IGNORECASE),
@@ -44,7 +48,7 @@ _PATTERNS = {
 }
 
 
-async def handle_command(service: MarketService, player: str, msg: str) -> str:
+async def handle_command(service: MarketService, auth: AuthService, player: str, msg: str) -> str:
     if not await service.settings.get_bool("Enabled"):
         return "The Market module is currently disabled."
 
@@ -53,17 +57,17 @@ async def handle_command(service: MarketService, player: str, msg: str) -> str:
         if not match:
             continue
         try:
-            return await _dispatch(service, player, name, match)
+            return await _dispatch(service, auth, player, name, match)
         except MarketError as exc:
             return _format_error(exc)
 
     return (
         "Usage: market <item name> | market <aoid> | market status | market register | "
-        "market watch <item> | market unwatch <aoid> | market watchlist | market help"
+        "market watch <item> | market unwatch <aoid> | market watchlist | market apikey generate | market help"
     )
 
 
-async def _dispatch(service: MarketService, player: str, name: str, match: re.Match) -> str:
+async def _dispatch(service: MarketService, auth: AuthService, player: str, name: str, match: re.Match) -> str:
     if name == "register":
         await service.register(player)
         return "You're registered with the Market module. Try 'market watch <item>' to build a watchlist."
@@ -79,6 +83,31 @@ async def _dispatch(service: MarketService, player: str, name: str, match: re.Ma
             return "This cannot be undone. Confirm with 'market untrack all confirm'."
         cleared = await service.untrack_all()
         return f"Cleared {cleared} tracked item(s)."
+
+    if name == "apikey_generate":
+        raw = await auth.generate_key(player)
+        return (
+            f"Your new API key: {raw}\n"
+            "Save this now - it will not be shown again. Send it as the "
+            f"X-Api-Key header on write requests to your own /players/{player}/... "
+            "endpoints. Generating a new key revokes any previous one."
+        )
+
+    if name == "apikey_revoke":
+        if not (match.group(1) and match.group(1).lower() == "confirm"):
+            return "This will disable your current key immediately. Confirm with 'market apikey revoke confirm'."
+        count = await auth.revoke_keys(player)
+        return f"Revoked {count} active key(s)." if count else "You have no active keys."
+
+    if name == "apikey_list":
+        keys = await auth.list_keys(player)
+        if not keys:
+            return "You have no API keys. Generate one with 'market apikey generate'."
+        lines = [
+            f"{key.prefix}... - {'revoked' if key.revoked_at else 'active'}, created {key.created_at:%Y-%m-%d}"
+            for key in keys
+        ]
+        return "Your API keys:\n" + "\n".join(lines)
 
     if name == "status_details":
         rows = await service.status_details()

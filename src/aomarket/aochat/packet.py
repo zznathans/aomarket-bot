@@ -37,6 +37,7 @@ IN_SCHEMAS: dict[int, str] = {
     AOCP_LOGIN_OK: "",
     AOCP_LOGIN_ERROR: "S",
     AOCP_LOGIN_CHARLIST: "isii",
+    AOCP_CLIENT_NAME: "IS",
     AOCP_CLIENT_LOOKUP: "IS",
     AOCP_MSG_PRIVATE: "ISS",
     AOCP_BUDDY_LOGONOFF: "IIS",  # aocpdifs[1] for AO

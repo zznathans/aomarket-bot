@@ -9,9 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from aomarket.aochat.client import AOChatClient
 from aomarket.aodb.client import AodbClient
+from aomarket.auth.service import AuthService
 from aomarket.autotrack.scraper import AutoTrackScraper
 from aomarket.bot.scheduler import autotrack_loop, poll_loop
 from aomarket.config import AppConfig
+from aomarket.db.api_key_repo import ApiKeyRepo
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
 from aomarket.gmi.client import GmiClient
@@ -75,6 +77,18 @@ class MarketBot:
         finally:
             await session.close()
 
+    @asynccontextmanager
+    async def make_auth_service(self) -> AsyncIterator[AuthService]:
+        session = self.sessionmaker()
+        try:
+            yield AuthService(
+                repo=ApiKeyRepo(session),
+                market_repo=MarketRepo(session),
+                owner_character=self.config.ao_owner_character,
+            )
+        finally:
+            await session.close()
+
     async def _send_privgroup(self, message: str) -> None:
         gid = self.chat_client.character.id if self.chat_client.character else None
         if gid is not None:
@@ -95,17 +109,17 @@ class MarketBot:
         from aomarket.market.commands import handle_command
 
         # AOCP_MSG_PRIVATE only carries the sender's numeric character id, not
-        # their name -- reverse id->name resolution (AO has no such packet in
-        # the subset implemented here) isn't wired up yet, so the numeric id
-        # is used as MarketService's `player` identity for chat-originated
-        # commands. This is a known v1 gap: it means a given character's
-        # chat-tell activity and their (name-keyed) API activity don't
-        # currently line up under the same `player` value.
+        # their name -- the AO chat server separately (and asynchronously)
+        # pushes an AOCP_CLIENT_NAME packet resolving it, typically around
+        # the same time as the tell. name_for_id() returns that once it's
+        # arrived; fall back to the numeric id if it hasn't yet (e.g. the
+        # very first tell in a session), so a `player` identity is always
+        # available even if it doesn't match their display name this once.
         char_id = tell.sender_id
-        player = str(char_id)
+        player = self.chat_client.name_for_id(char_id) or str(char_id)
 
-        async with self.make_service() as service:
-            reply = await handle_command(service, player, tell.message)
+        async with self.make_service() as service, self.make_auth_service() as auth:
+            reply = await handle_command(service, auth, player, tell.message)
         await self.chat_client.send_tell(char_id, reply)
 
     async def stop(self) -> None:

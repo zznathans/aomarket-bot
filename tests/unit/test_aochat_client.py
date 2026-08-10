@@ -137,6 +137,32 @@ async def test_dispatch_client_lookup_no_such_character_resolves_none():
 
 
 @pytest.mark.asyncio
+async def test_dispatch_client_name_populates_id_to_name_cache():
+    client = _make_client([])
+
+    pkt = packet.InboundPacket(type=packet.AOCP_CLIENT_NAME, args=[555, b"Alice"])
+    await client._dispatch(pkt)  # noqa: SLF001
+
+    assert client.name_for_id(555) == "Alice"
+
+
+@pytest.mark.asyncio
+async def test_dispatch_client_name_no_such_character_not_cached():
+    client = _make_client([])
+
+    pkt = packet.InboundPacket(type=packet.AOCP_CLIENT_NAME, args=[0xFFFFFFFF, b"Nobody"])
+    await client._dispatch(pkt)  # noqa: SLF001
+
+    assert client.name_for_id(0xFFFFFFFF) is None
+
+
+def test_name_for_id_unresolved_returns_none():
+    client = _make_client([])
+
+    assert client.name_for_id(999) is None
+
+
+@pytest.mark.asyncio
 async def test_buddy_add_skips_self():
     client = _make_client([
         packet.InboundPacket(type=packet.AOCP_LOGIN_SEED, args=[b"serverseed"]),

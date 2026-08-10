@@ -54,6 +54,7 @@ class AOChatClient:
     _stopping: bool = field(default=False, init=False, repr=False)
     buddy_online: dict[int, bool] = field(default_factory=dict, init=False, repr=False)
     _name_to_id: dict[str, int] = field(default_factory=dict, init=False, repr=False)
+    _id_to_name: dict[int, str] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self._conn = AOChatConnection(self.host, self.port)
@@ -138,6 +139,13 @@ class AOChatClient:
         finally:
             self._lookup_waiters.pop(key, None)
 
+    def name_for_id(self, char_id: int) -> str | None:
+        """Resolve a numeric character id to its name, if the server has told
+        us -- AOCP_CLIENT_NAME is server-pushed (typically alongside a tell
+        from that character), not requested on demand, so this only returns
+        a result if that's already happened."""
+        return self._id_to_name.get(char_id)
+
     async def send_tell_by_name(self, name: str, message: str) -> None:
         char_id = await self.lookup_user(name)
         if char_id is not None:
@@ -175,6 +183,10 @@ class AOChatClient:
             self.buddy_online[char_id] = bool(online)
             if self.on_buddy_status is not None:
                 await self.on_buddy_status(BuddyStatus(char_id=char_id, online=bool(online)))
+        elif pkt.type == packet.AOCP_CLIENT_NAME:
+            char_id, name = pkt.args
+            if char_id != 0xFFFFFFFF:
+                self._id_to_name[char_id] = name.decode(_TEXT_ENCODING)
         elif pkt.type == packet.AOCP_CLIENT_LOOKUP:
             char_id, name = pkt.args
             decoded_name = name.decode(_TEXT_ENCODING)
