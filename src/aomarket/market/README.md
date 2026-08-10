@@ -25,7 +25,10 @@ transport-agnostic, with no knowledge of chat or HTTP.
 - **`commands.py`** — In-game `market`/`mkt` chat command dispatch: a
   regex sub-dispatch table (most specific pattern first) that calls
   straight into `MarketService` — the same methods the API routes call —
-  and renders results via `rendering.py`.
+  and renders results via `rendering.py`. Also dispatches `apikey
+  generate`/`revoke`/`list` into an `AuthService`
+  ([`auth/`](../auth/README.md)) — the only way a player gets an API key
+  for the HTTP API.
 - **`parsing.py`** — Shared shorthand parsing/formatting used by both
   `commands.py` and `rendering.py`: credit shorthand (`1.5m` ↔
   1,500,000), QL, and range parsing.

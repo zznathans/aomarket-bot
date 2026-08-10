@@ -47,6 +47,7 @@ what it does:
 - [`market/`](src/aomarket/market/README.md) — core business logic
 - [`bot/`](src/aomarket/bot/README.md) — the bot thread and background loops
 - [`api/`](src/aomarket/api/README.md) — the FastAPI control surface
+- [`auth/`](src/aomarket/auth/README.md) — API key issuance and verification
 
 ## Quickstart
 
@@ -68,6 +69,8 @@ Every setting is an environment variable, loaded by `AppConfig`
 | `DATABASE_URL` | `postgresql+asyncpg://aomarket:aomarket@localhost:55432/aomarket` | SQLAlchemy/asyncpg connection string. |
 | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | *(blank)* | Alternate way to configure the database, for setups (e.g. an operator-managed Postgres cluster) that hand out a per-role username/password Secret rather than a single connection string. Setting `DB_HOST` composes `DATABASE_URL` from these instead of using it directly. |
 | `AO_LOGIN`, `AO_PASSWORD`, `AO_CHARACTER` | *(blank)* | Leave all blank to run in API-only mode. |
+| `AO_OWNER_CHARACTER` | *(blank)* | Player always treated as admin for API key purposes (see Authentication below), regardless of `MarketUser.is_admin`. Bootstraps the first admin; leave blank to require setting `is_admin` directly instead. |
+| `API_KEY_PEPPER` | *(blank)* | Server-side secret mixed into API key hashing. Leave blank to hash without one (keys are still PBKDF2-hardened either way). Changing this invalidates every previously-issued key. |
 | `AO_CHAT_SERVER` | `chat.d1.funcom.com` | |
 | `AO_CHAT_PORT` | `7105` | |
 | `AODB_API_URL` | `https://aodb-api.ao.yeetbox.net` | Item lookup/search service. |
@@ -79,6 +82,26 @@ Every setting is an environment variable, loaded by `AppConfig`
 Runtime behavior tuning (poll interval, auto-track on/off, subscription
 limits, …) lives in the `settings` table instead, seeded with defaults
 on startup — see [`db/README.md`](src/aomarket/db/README.md).
+
+## Authentication
+
+Every GET endpoint is open; every write endpoint requires an API key sent
+as the `X-Api-Key` header. There's no HTTP signup — a key is only ever
+issued to a player who's proven their identity by actually talking to the
+bot in-game, via `market apikey generate`. That reply shows the raw key
+once; save it, it can't be retrieved again (`market apikey generate` a
+second time revokes the old one and issues a new one). `market apikey
+revoke confirm` and `market apikey list` are also available.
+
+A key generated this way is scoped to your own player-level writes only
+(`/players/<you>/...`) — it can't touch another player's data or any of
+the bot-wide endpoints (`/admin/*`, `/bot/*`, `/settings/*`,
+`POST`/`DELETE /watch/{aoid}`). Those require an **admin** key: either the
+player named in `AO_OWNER_CHARACTER` above, or any player with
+`MarketUser.is_admin` set directly in the database.
+
+See [`auth/README.md`](src/aomarket/auth/README.md) for how key
+generation/verification works internally.
 
 ## Deploying
 
