@@ -40,10 +40,12 @@ aomarketBot:
     port: 80
 
   ao:
-    # -- AO character name to log in as. Leave blank (along with the
-    # -- ao-login/ao-password secret values below) to run API-only, with no
-    # -- live AO chat connection.
+    # -- AO character name to log in as. Leave blank (along with login/
+    # -- password below) to run API-only, with no live AO chat connection.
     character: ""
+    # -- AO account login (email/username). Not treated as secret -- it's
+    # -- an identifier, not a credential; only the password below is.
+    login: ""
     # -- AO chat server hostname.
     chatServer: "chat.d1.funcom.com"
     # -- AO chat server port.
@@ -56,21 +58,41 @@ aomarketBot:
   # -- Log level (DEBUG/INFO/WARNING/ERROR).
   logLevel: "INFO"
 
-  # -- Secret handling for DATABASE_URL and the AO account credentials.
-  # -- true (default): renders a plain Secret from the `secret.*` values
-  # -- below -- fine when those values are supplied via `--set`/a
-  # -- gitignored local values file, not committed to git. Set to false to
-  # -- instead render an ExternalSecret pulling from a ClusterSecretStore
-  # -- (see `externalSecret.*` below), matching every other app in this
-  # -- environment's ArgoCD setup.
+  database:
+    # -- "url" (default): DATABASE_URL comes from a Secret key `database-url`
+    # -- (see createSecret/secret.databaseUrl/externalSecret.remoteKey.databaseUrl
+    # -- below). "parts": for a Postgres operator (e.g. Zalando's
+    # -- postgres-operator) that auto-generates a per-role Secret with
+    # -- `username`/`password` keys but no full connection string -- host/
+    # -- port/name are plain values here, and the username/password Secret
+    # -- is referenced directly via existingSecret* below (no
+    # -- createSecret/externalSecret involvement, since that Secret is
+    # -- already managed by the operator, not by this chart).
+    mode: url
+    # -- Only used when mode is "parts".
+    host: ""
+    port: 5432
+    name: ""
+    # -- Only used when mode is "parts". Name of an existing Secret (e.g.
+    # -- one a Postgres operator generated) with username/password keys.
+    existingSecret: ""
+    existingSecretUserKey: username
+    existingSecretPasswordKey: password
+
+  # -- Secret handling for DATABASE_URL (when database.mode is "url") and
+  # -- the AO account password. true (default): renders a plain Secret from
+  # -- the `secret.*` values below -- fine when those values are supplied
+  # -- via `--set`/a gitignored local values file, not committed to git.
+  # -- Set to false to instead render an ExternalSecret pulling from a
+  # -- ClusterSecretStore (see `externalSecret.*` below), matching every
+  # -- other app in this environment's ArgoCD setup.
   createSecret: true
   secret:
     # -- Full SQLAlchemy/asyncpg connection string, e.g.
-    # -- postgresql+asyncpg://user:pass@host:5432/dbname. Required --
-    # -- there is no usable default, this must point at a real Postgres.
+    # -- postgresql+asyncpg://user:pass@host:5432/dbname. Required when
+    # -- database.mode is "url" -- there is no usable default, this must
+    # -- point at a real Postgres. Unused when database.mode is "parts".
     databaseUrl: ""
-    # -- AO account login (email/username). Leave blank for API-only mode.
-    aoLogin: ""
     # -- AO account password. Leave blank for API-only mode.
     aoPassword: ""
 
@@ -82,12 +104,17 @@ aomarketBot:
     refreshInterval: 1h
     remoteKey:
       # -- Remote secret key (in the ClusterSecretStore) holding the DB
-      # -- connection string.
+      # -- connection string. Unused when database.mode is "parts".
       databaseUrl: aomarket-bot-database-url
-      # -- Remote secret key holding the AO account login.
-      aoLogin: aomarket-bot-ao-login
       # -- Remote secret key holding the AO account password.
       aoPassword: aomarket-bot-ao-password
+    # -- Optional: property within each remote key above to extract, for a
+    # -- ClusterSecretStore backend (e.g. GCP) where one remote key holds a
+    # -- structured/multi-property secret rather than a single scalar value.
+    # -- Leave blank to use the whole remote key value as-is (the default).
+    remoteProperty:
+      databaseUrl: ""
+      aoPassword: ""
 
   # -- Raw Kubernetes objects to render alongside chart-managed resources.
   extraObjects: []
