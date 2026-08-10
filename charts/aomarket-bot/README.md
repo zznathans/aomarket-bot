@@ -21,9 +21,10 @@ Helm chart for aomarket-bot
 | aomarketBot.database.mode | string | `"url"` | already managed by the operator, not by this chart). |
 | aomarketBot.database.name | string | `""` |  |
 | aomarketBot.database.port | int | `5432` |  |
-| aomarketBot.externalSecret | object | `{"refreshInterval":"1h","remoteKey":{"aoPassword":"aomarket-bot-ao-password","databaseUrl":"aomarket-bot-database-url"},"secretStoreRef":{"kind":"ClusterSecretStore","name":"gcp-clusterstore"}}` | Only used when createSecret is false. |
+| aomarketBot.externalSecret | object | `{"refreshInterval":"1h","remoteKey":{"aoPassword":"aomarket-bot-ao-password","databaseUrl":"aomarket-bot-database-url"},"remoteProperty":{"aoPassword":"","databaseUrl":""},"secretStoreRef":{"kind":"ClusterSecretStore","name":"gcp-clusterstore"}}` | Only used when createSecret is false. |
 | aomarketBot.externalSecret.remoteKey.aoPassword | string | `"aomarket-bot-ao-password"` | Remote secret key holding the AO account password. |
 | aomarketBot.externalSecret.remoteKey.databaseUrl | string | `"aomarket-bot-database-url"` | connection string. Unused when database.mode is "parts". |
+| aomarketBot.externalSecret.remoteProperty | object | `{"aoPassword":"","databaseUrl":""}` | Leave blank to use the whole remote key value as-is (the default). |
 | aomarketBot.extraObjects | list | `[]` | Raw Kubernetes objects to render alongside chart-managed resources. |
 | aomarketBot.gmiApiUrl | string | `"https://gmi.nadybot.org"` | Base URL for the GMI live-order API. |
 | aomarketBot.image.repository | string | `"ghcr.io/zznathans/aomarket-bot"` | Container image registry and repository for the aomarket-bot image. |
