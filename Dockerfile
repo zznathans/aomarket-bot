@@ -2,7 +2,7 @@
 # can point at a different image tomorrow; the digest can't. Re-resolve with
 # `docker manifest inspect python:3.14-slim` and update both FROM lines
 # below when intentionally bumping the base image.
-FROM python:3.14-slim@sha256:a7fb1e634c4a578f9e0bd6327f11a3cde11b7a9395f48e24360c0988bcc5c2bc AS builder
+FROM python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4 AS builder
 
 WORKDIR /build
 
@@ -20,7 +20,7 @@ COPY src ./src
 RUN pip install --no-cache-dir --require-hashes --prefix=/install -r requirements.txt \
     && pip install --no-cache-dir --no-deps --prefix=/install .
 
-FROM python:3.14-slim@sha256:a7fb1e634c4a578f9e0bd6327f11a3cde11b7a9395f48e24360c0988bcc5c2bc AS runtime
+FROM python:3.14-slim@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4 AS runtime
 
 # Baked into the Dockerfile (rather than relying solely on
 # docker/metadata-action's build-time --label flags) so it survives paths
