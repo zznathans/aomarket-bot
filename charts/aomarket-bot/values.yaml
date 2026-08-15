@@ -52,7 +52,7 @@ aomarketBot:
     chatPort: 7105
 
   # -- Base URL for the aodb-api item-lookup service.
-  aodbApiUrl: "https://aodb-api.ao.yeetbox.net"
+  aodbApiUrl: "https://aodb.ao.yeetbox.net"
   # -- Base URL for the GMI live-order API.
   gmiApiUrl: "https://gmi.nadybot.org"
   # -- Log level (DEBUG/INFO/WARNING/ERROR).

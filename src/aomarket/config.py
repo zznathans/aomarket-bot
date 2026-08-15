@@ -57,7 +57,7 @@ class AppConfig(BaseSettings):
     # invalidates every previously-issued key.
     api_key_pepper: str = ""
 
-    aodb_api_url: str = "https://aodb-api.ao.yeetbox.net"
+    aodb_api_url: str = "https://aodb.ao.yeetbox.net"
     gmi_api_url: str = "https://gmi.nadybot.org"
 
     api_host: str = "0.0.0.0"
