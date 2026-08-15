@@ -12,7 +12,7 @@ Helm chart for aomarket-bot
 | aomarketBot.ao.chatPort | int | `7105` | AO chat server port. |
 | aomarketBot.ao.chatServer | string | `"chat.d1.funcom.com"` | AO chat server hostname. |
 | aomarketBot.ao.login | string | `""` | an identifier, not a credential; only the password below is. |
-| aomarketBot.aodbApiUrl | string | `"https://aodb-api.ao.yeetbox.net"` | Base URL for the aodb-api item-lookup service. |
+| aomarketBot.aodbApiUrl | string | `"https://aodb.ao.yeetbox.net"` | Base URL for the aodb-api item-lookup service. |
 | aomarketBot.createSecret | bool | `true` | other app in this environment's ArgoCD setup. |
 | aomarketBot.database.existingSecret | string | `""` | one a Postgres operator generated) with username/password keys. |
 | aomarketBot.database.existingSecretPasswordKey | string | `"password"` |  |
