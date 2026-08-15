@@ -73,7 +73,7 @@ Every setting is an environment variable, loaded by `AppConfig`
 | `API_KEY_PEPPER` | *(blank)* | Server-side secret mixed into API key hashing. Leave blank to hash without one (keys are still PBKDF2-hardened either way). Changing this invalidates every previously-issued key. |
 | `AO_CHAT_SERVER` | `chat.d1.funcom.com` | |
 | `AO_CHAT_PORT` | `7105` | |
-| `AODB_API_URL` | `https://aodb-api.ao.yeetbox.net` | Item lookup/search service. |
+| `AODB_API_URL` | `https://aodb.ao.yeetbox.net` | Item lookup/search service. |
 | `GMI_API_URL` | `https://gmi.nadybot.org` | Live order book service. |
 | `API_HOST` | `0.0.0.0` | |
 | `API_PORT` | `8000` | |

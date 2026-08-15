@@ -1,6 +1,6 @@
 # aodb
 
-HTTP client for [aodb-api](https://aodb-api.ao.yeetbox.net), the item
+HTTP client for [aodb-api](https://aodb.ao.yeetbox.net), the item
 lookup/search service this bot uses to resolve Anarchy Online item names
 and metadata.
 
