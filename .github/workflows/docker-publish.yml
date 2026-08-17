@@ -36,7 +36,7 @@ jobs:
         with:
           images: ghcr.io/zznathans/aomarket-bot
           tags: |
-            type=raw,value=${{ github.event.release.tag_name }}
+            type=semver,pattern={{version}},value=${{ github.event.release.tag_name }}
 
       # cache-from pulls whatever layers docker.yml's build-verification
       # job (or a prior publish) already left in the GHA cache for this
