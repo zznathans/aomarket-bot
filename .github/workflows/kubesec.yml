@@ -36,6 +36,10 @@ on:
   schedule:
     - cron: '43 20 * * 2'
 
+# Least-privilege default; the scan job below grants itself only what it
+# actually needs.
+permissions: {}
+
 jobs:
   scan:
     name: Scan rendered manifests
