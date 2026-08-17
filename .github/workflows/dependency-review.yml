@@ -1,13 +1,16 @@
 name: Dependency Review
 
-# Not a required check, so a plain workflow-level path filter is safe here
-# - only worth running when a dependency manifest actually changed.
+# pull_request only -- this action diffs the PR's base against its head to
+# find newly-added dependencies, so it has nothing meaningful to compare
+# on a plain branch push (no base ref to diff against). Not a required
+# check, so a workflow-level path filter is safe: only worth running when
+# a dependency manifest actually changed.
 on:
   pull_request:
     paths:
-      - 'requirements*.txt'
-      - 'pyproject.toml'
-      - 'Dockerfile'
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "Dockerfile"
 
 permissions:
   contents: read

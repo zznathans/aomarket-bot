@@ -1,101 +1,59 @@
 name: Docker
 
+# Build-only verification -- never pushes an image. Actual publishing
+# happens from release.yml once that job exists. Same trigger/dedup shape
+# as ci.yml: push to any branch except main, and pull_request; the
+# check-pr job skips the push-triggered run once a PR is open on that
+# branch, since pull_request already covers the same commit. Not a
+# required check, so (like dependency-review.yml) it's also safe to path
+# -filter to only what actually affects the built image.
 on:
-  # Build-and-scan verification only -- never publishes. Actual publishing
-  # to ghcr.io happens from release.yml's publish-image job, in the same
-  # workflow run as the semantic-release step that cuts the version tag
-  # (see the comment there for why it's not a separate tag-triggered
-  # workflow). There's no "latest floating on main" image.
-  #
-  # No path filter: this job's own name is a required status check in
-  # the branch ruleset, and a required check that never runs (because a
-  # PR only touched, say, README.md or charts/**) leaves GitHub treating
-  # it as permanently pending -- blocking merge even with every other
-  # check green. The build itself is cheap (~1 min), so running it on
-  # every PR is worth it to keep that check meaningful.
+  push:
+    branches-ignore: [main]
+    paths: &docker-paths
+      - "Dockerfile"
+      - ".dockerignore"
+      - "src/**"
+      - "pyproject.toml"
+      - "requirements*.txt"
   pull_request:
-
-concurrency:
-  group: docker-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    paths: *docker-paths
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build and Scan (verification only)
+  check-pr:
+    name: Check for open PR
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      security-events: write
+      pull-requests: read
+    outputs:
+      has_open_pr: ${{ steps.check.outputs.has_open_pr }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          count=$(gh pr list --repo "${{ github.repository }}" --head "${{ github.ref_name }}" --state open --json number --jq 'length')
+          echo "has_open_pr=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
+  build:
+    name: Build
+    needs: check-pr
+    if: always() && (github.event_name == 'pull_request' || needs.check-pr.outputs.has_open_pr == 'false')
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Build image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: .
           push: false
-          load: true
-          tags: aomarket-bot:pr-${{ github.event.pull_request.number }}
+          tags: aomarket-bot:verify
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      # `tag` is a bare tag, not repo:tag -- the action tags its output as
-      # `<target's repo>:<tag>` itself, so a repo:tag string here produces
-      # an invalid double-colon reference (aomarket-bot:aomarket-bot-slim:pr-N).
-      - uses: kitabisa/docker-slim-action@6a9a64eaf0c08b1251c148514dd70be1495bff12 # v1.2.0
-        env:
-          DSLIM_HTTP_PROBE: false
-        with:
-          target: aomarket-bot:pr-${{ github.event.pull_request.number }}
-          tag: "pr-${{ github.event.pull_request.number }}-slim"
-
-      # Two separate scans rather than one gating on `format: sarif`: the
-      # sarif+exit-code combination in this trivy-action version was
-      # observed to fail the step (nonzero outcome, no vulnerability table
-      # printed since SARIF doesn't write one to the log) even though a
-      # local `trivy image` run against the exact same built image, same
-      # severity/ignore-unfixed flags, exits 0 clean - confirmed live on
-      # this workflow's own first real PR run. A plain `format: table`
-      # scan's own exit code is unambiguous, so let it gate the job
-      # directly instead of trusting the sarif+exit-code combo (same fix
-      # already applied in aodb's equivalent workflow).
-      - name: Scan image for vulnerabilities (fails the build on CRITICAL)
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: aomarket-bot:pr-${{ github.event.pull_request.number }}
-          format: table
-          severity: CRITICAL
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Generate SARIF for the Security tab (informational, non-gating)
-        if: always()
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: aomarket-bot:pr-${{ github.event.pull_request.number }}
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL
-          ignore-unfixed: true
-          exit-code: "0"
-
-      # Pinned rather than left to auto-derive from the job name: without
-      # this, codeql-action defaults the category to "<workflow file>:<job
-      # id>", and a future job rename would silently start a *new* alert
-      # stream - orphaning the old one's alerts as permanently "open"
-      # regardless of how stale they get. Found and fixed as a real,
-      # already-triggered bug in aodb's equivalent workflow; pinning here
-      # from the start avoids ever hitting it.
-      - name: Upload Trivy scan results to the Security tab
-        uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
-        if: always() && hashFiles('trivy-results.sarif') != ''
-        with:
-          sarif_file: trivy-results.sarif
-          category: trivy-pr-verification
