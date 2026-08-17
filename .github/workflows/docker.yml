@@ -31,7 +31,7 @@ jobs:
           echo "has_open_pr=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   build:
-    name: Build (verification only)
+    name: Build
     needs: check-pr
     if: always() && (github.event_name == 'pull_request' || needs.check-pr.outputs.has_open_pr == 'false')
     runs-on: ubuntu-latest
