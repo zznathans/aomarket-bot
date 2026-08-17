@@ -99,7 +99,7 @@ generation/verification works internally.
 
 ## Deploying
 
-A Helm chart lives in [`charts/aomarket-bot`](charts/aomarket-bot/README.md)
+A Helm chart lives at [`charts/aomarket-bot`](charts/aomarket-bot/README.md)
 and is published to this repo's own Helm repository on every release:
 
 ```bash
