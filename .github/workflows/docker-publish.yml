@@ -1,12 +1,10 @@
 name: Docker Publish
 
 # Fires on release:published rather than being chained onto release.yml's
-# own job -- NOTE: semantic-release's github plugin currently creates that
-# release using secrets.GITHUB_TOKEN, and GitHub's anti-recursion rule
-# means an event created by the default token never triggers another
-# workflow's listener. Until release.yml's release step authenticates as
-# something else (a GitHub App or a PAT), this workflow is correct but
-# will not actually run.
+# own job. release.yml's semantic-release step authenticates as the
+# release App (not secrets.GITHUB_TOKEN) specifically so the release it
+# creates fires this trigger -- GitHub's anti-recursion rule means an
+# event created by the default token never would have.
 on:
   release:
     types: [published]
@@ -32,6 +30,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+        with:
+          images: ghcr.io/zznathans/aomarket-bot
+          tags: |
+            type=raw,value=${{ github.event.release.tag_name }}
+
       # cache-from pulls whatever layers docker.yml's build-verification
       # job (or a prior publish) already left in the GHA cache for this
       # ref, so this is usually a re-push of already-built layers rather
@@ -42,6 +48,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/zznathans/aomarket-bot:${{ github.event.release.tag_name }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

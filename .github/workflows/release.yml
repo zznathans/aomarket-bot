@@ -16,12 +16,31 @@ jobs:
       issues: write
       pull-requests: write
     steps:
+      # Mints a short-lived installation token for the aomarket-bot-release
+      # App instead of using secrets.GITHUB_TOKEN -- a release/tag created
+      # with the default token never fires other workflows' release:
+      # published listeners (GitHub's anti-recursion rule), which is
+      # exactly what docker-publish.yml needs to trigger. See
+      # https://github.com/semantic-release/semantic-release/discussions/1906.
+      - name: Generate a token for the release App
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+          # Also required for the App token to actually be used for git
+          # operations rather than the default token checkout would
+          # otherwise wire in -- same "persist-credentials: false" fix
+          # documented in the discussion linked above.
+          persist-credentials: false
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v4
         with:
           semantic_version: 24
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
