@@ -13,6 +13,7 @@ from aomarket.auth.service import AuthService
 from aomarket.autotrack.scraper import AutoTrackScraper
 from aomarket.bot.scheduler import autotrack_loop, poll_loop
 from aomarket.config import AppConfig
+from aomarket.db.aodb_backoff_repo import AodbBackoffRepo
 from aomarket.db.api_key_repo import ApiKeyRepo
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
@@ -66,13 +67,20 @@ class MarketBot:
         try:
             repo = MarketRepo(session)
             settings = SettingsRepo(session)
+            aodb_backoff = AodbBackoffRepo(session)
             chat = ChatSink(
                 send_privgroup=self._send_privgroup,
                 send_tell=self.chat_client.send_tell_by_name,
                 is_online=self.chat_client.is_online_by_name,
             )
             yield MarketService(
-                repo=repo, settings=settings, aodb=self.aodb, gmi=self.gmi, scraper=self.scraper, chat=chat
+                repo=repo,
+                settings=settings,
+                aodb=self.aodb,
+                aodb_backoff=aodb_backoff,
+                gmi=self.gmi,
+                scraper=self.scraper,
+                chat=chat,
             )
         finally:
             await session.close()

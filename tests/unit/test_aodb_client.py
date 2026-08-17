@@ -8,7 +8,7 @@ from aomarket.aodb.client import AodbClient, Item
 @pytest.mark.asyncio
 async def test_get_item_returns_item_on_200():
     with respx.mock(base_url="https://aodb.example") as mock:
-        mock.get("/v2/items/2").mock(
+        mock.get("/api/items/2").mock(
             return_value=httpx.Response(
                 200, json={"id": 2, "name": "Notum Splitter", "ql": 150, "icon": 54321, "description": None}
             )
@@ -22,7 +22,7 @@ async def test_get_item_returns_item_on_200():
 @pytest.mark.asyncio
 async def test_get_item_returns_none_on_404():
     with respx.mock(base_url="https://aodb.example") as mock:
-        mock.get("/v2/items/999999").mock(
+        mock.get("/api/items/999999").mock(
             return_value=httpx.Response(404, json={"detail": "No item with id 999999"})
         )
         client = AodbClient("https://aodb.example")
@@ -34,7 +34,7 @@ async def test_get_item_returns_none_on_404():
 @pytest.mark.asyncio
 async def test_search_items_parses_list_and_total_count_header():
     with respx.mock(base_url="https://aodb.example") as mock:
-        mock.get("/v2/items", params={"q": "splitter", "limit": 50, "offset": 0}).mock(
+        mock.get("/api/items", params={"q": "splitter", "limit": 50, "offset": 0}).mock(
             return_value=httpx.Response(
                 200,
                 json=[{"id": 2, "name": "Notum Splitter", "ql": 150, "icon": 54321, "description": None}],
@@ -51,7 +51,7 @@ async def test_search_items_parses_list_and_total_count_header():
 @pytest.mark.asyncio
 async def test_search_items_empty_result():
     with respx.mock(base_url="https://aodb.example") as mock:
-        mock.get("/v2/items", params={"q": "doesnotexist", "limit": 50, "offset": 0}).mock(
+        mock.get("/api/items", params={"q": "doesnotexist", "limit": 50, "offset": 0}).mock(
             return_value=httpx.Response(200, json=[], headers={"X-Total-Count": "0"})
         )
         client = AodbClient("https://aodb.example")

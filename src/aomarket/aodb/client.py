@@ -13,9 +13,16 @@ class Item:
 
 
 class AodbClient:
-    """Thin wrapper around the aodb-api /v2/items JSON endpoints: bare JSON
-    array responses, X-Total-Count header for pagination, 404 JSON body on
-    miss, unauthenticated.
+    """Thin wrapper around the aodb-api /api/items JSON endpoints: bare
+    JSON array responses, X-Total-Count header for pagination, 404 JSON
+    body on miss, unauthenticated.
+
+    Was /v2/items until aodb-api's own restructure moved its JSON API
+    under /api (see aodb's "redesign browse UI and move JSON API under
+    /api") - /v2 hasn't existed for a while, which meant every lookup
+    through this client 404'd regardless of whether the aoid was
+    actually valid. Confirmed live: aoid 245990 ("Lava capsule") 404s at
+    /v2/items/245990 and 200s with real data at /api/items/245990.
     """
 
     def __init__(self, base_url: str, http_client: httpx.AsyncClient | None = None):
@@ -26,7 +33,7 @@ class AodbClient:
         await self._client.aclose()
 
     async def get_item(self, aoid: int) -> Item | None:
-        response = await self._client.get(f"{self._base_url}/v2/items/{aoid}")
+        response = await self._client.get(f"{self._base_url}/api/items/{aoid}")
         if response.status_code == 404:
             return None
         response.raise_for_status()
@@ -38,7 +45,7 @@ class AodbClient:
         params: dict[str, str | int] = {"q": query, "limit": limit, "offset": offset}
         if ql is not None:
             params["ql"] = ql
-        response = await self._client.get(f"{self._base_url}/v2/items", params=params)
+        response = await self._client.get(f"{self._base_url}/api/items", params=params)
         response.raise_for_status()
         items = [_item_from_json(row) for row in response.json()]
         total_count = int(response.headers.get("X-Total-Count", len(items)))

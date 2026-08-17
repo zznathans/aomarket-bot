@@ -15,6 +15,7 @@ from datetime import UTC, datetime, timedelta
 
 from aomarket.aodb.client import AodbClient, Item
 from aomarket.autotrack.scraper import AutoTrackScraper, extract_aoids
+from aomarket.db.aodb_backoff_repo import AodbBackoffRepo
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
 from aomarket.gmi.client import GmiClient, Orders
@@ -69,6 +70,7 @@ class MarketService:
     repo: MarketRepo
     settings: SettingsRepo
     aodb: AodbClient
+    aodb_backoff: AodbBackoffRepo
     gmi: GmiClient
     scraper: AutoTrackScraper = field(default_factory=AutoTrackScraper)
     chat: ChatSink = field(default_factory=ChatSink)
@@ -430,8 +432,26 @@ class MarketService:
         aoids = aoids[:count]
         resolved: dict[int, Item] = {}
         if aoids:
-            items = await asyncio.gather(*(self.aodb.get_item(aoid) for aoid in aoids))
-            resolved = {aoid: item for aoid, item in zip(aoids, items, strict=True) if item is not None}
+            # Skip re-requesting aoids that recently 404'd and are still
+            # within their backoff window - the ranked list is scraped
+            # fresh every cycle and reliably includes the same
+            # already-known-missing aoids alongside real ones, so without
+            # this every sync cycle re-attempts every permanently-missing
+            # item forever.
+            due_aoids = list(await self.aodb_backoff.due_for_retry(set(aoids)))
+            skipped_count = len(aoids) - len(due_aoids)
+            if skipped_count:
+                log.info("aodb_lookup_backoff_skipped", count=skipped_count)
+
+            if due_aoids:
+                items = await asyncio.gather(*(self.aodb.get_item(aoid) for aoid in due_aoids))
+                for aoid, item in zip(due_aoids, items, strict=True):
+                    if item is None:
+                        log.warning("aodb_item_lookup_404", aoid=aoid)
+                        await self.aodb_backoff.record_failure(aoid)
+                    else:
+                        await self.aodb_backoff.record_success(aoid)
+                        resolved[aoid] = item
 
         await self.repo.unflag_autotrack_not_in(set(resolved.keys()))
         existing_aoids = await self.repo.existing_aoids(set(resolved.keys()))

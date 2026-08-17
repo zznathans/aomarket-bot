@@ -2,6 +2,7 @@ import pytest
 
 from aomarket.aodb.client import Item
 from aomarket.auth.service import AuthService
+from aomarket.db.aodb_backoff_repo import AodbBackoffRepo
 from aomarket.db.api_key_repo import ApiKeyRepo
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
@@ -41,6 +42,7 @@ async def _make_service(db_session, items=None):
         repo=repo,
         settings=settings,
         aodb=FakeAodbClient(items or {}),
+        aodb_backoff=AodbBackoffRepo(db_session),
         gmi=FakeGmiClient(),
         chat=ChatSink(),
     )

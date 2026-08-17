@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from aomarket.bot.runner import BotHandle
+from aomarket.db.aodb_backoff_repo import AodbBackoffRepo
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
 from aomarket.market.service import ChatSink, MarketService
@@ -45,6 +46,7 @@ async def get_service(request: Request, session: AsyncSession = Depends(get_db_s
         repo=MarketRepo(session),
         settings=SettingsRepo(session),
         aodb=state.aodb,
+        aodb_backoff=AodbBackoffRepo(session),
         gmi=state.gmi,
         scraper=state.scraper,
         chat=chat,
