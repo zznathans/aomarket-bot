@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from aomarket.aodb.client import Item
+from aomarket.db.aodb_backoff_repo import AodbBackoffRepo
 from aomarket.db.market_repo import MarketRepo
 from aomarket.db.settings_repo import SettingsRepo
 from aomarket.gmi.client import Orders, SellOrder
@@ -22,8 +23,10 @@ from tests.conftest import requires_postgres
 class FakeAodbClient:
     def __init__(self, items: dict[int, Item]):
         self._items = items
+        self.get_item_calls: list[int] = []
 
     async def get_item(self, aoid: int) -> Item | None:
+        self.get_item_calls.append(aoid)
         return self._items.get(aoid)
 
     async def search_items(self, query, ql=None, limit=50, offset=0):
@@ -53,14 +56,15 @@ def _item(aoid: int, name: str = "Notum Splitter", ql: int = 150) -> Item:
     return Item(aoid=aoid, name=name, ql=ql, icon=1234, description=None)
 
 
-async def _make_service(db_session, items=None, orders=None, pages=None, chat=None) -> MarketService:
+async def _make_service(db_session, items=None, orders=None, pages=None, chat=None, aodb=None) -> MarketService:
     repo = MarketRepo(db_session)
     settings = SettingsRepo(db_session)
     await settings.seed_defaults()
     return MarketService(
         repo=repo,
         settings=settings,
-        aodb=FakeAodbClient(items or {}),
+        aodb=aodb or FakeAodbClient(items or {}),
+        aodb_backoff=AodbBackoffRepo(db_session),
         gmi=FakeGmiClient(orders or {}),
         scraper=FakeScraper(pages or {}),
         chat=chat or ChatSink(),
@@ -471,6 +475,67 @@ async def test_sync_top_traded_items_tracks_resolved_items_and_unflags_dropped_o
     assert watch_2.auto_tracked is True
     assert watch_3.auto_tracked is True
     assert watch_99.auto_tracked is False
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_sync_top_traded_items_records_backoff_on_404(db_session):
+    page_html = '<a class="item-name" href="/item/999999">Ghost Item</a>'
+    aodb = FakeAodbClient({})  # 999999 is never resolvable -- simulates a 404
+    service = await _make_service(db_session, pages={1: page_html}, aodb=aodb)
+    await service.settings.set("AutoTrackCount", 1)
+
+    result = await service.sync_top_traded_items()
+
+    assert result.resolved_count == 0
+    assert await service.aodb_backoff.due_for_retry({999999}) == set()
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_sync_top_traded_items_skips_backed_off_aoids_without_calling_aodb(db_session):
+    page_html = (
+        '<a class="item-name" href="/item/999999">Ghost Item</a>'
+        '<a class="item-name" href="/item/2">Notum Splitter</a>'
+    )
+    aodb = FakeAodbClient({2: _item(2, "Notum Splitter")})
+    service = await _make_service(db_session, pages={1: page_html}, aodb=aodb)
+    await service.settings.set("AutoTrackCount", 2)
+
+    await service.sync_top_traded_items()  # first cycle: 999999 404s, backoff recorded
+    aodb.get_item_calls.clear()
+
+    result = await service.sync_top_traded_items()  # second cycle: 999999 still backed off
+
+    assert 999999 not in aodb.get_item_calls
+    assert 2 in aodb.get_item_calls
+    assert result.resolved_count == 1
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_sync_top_traded_items_clears_backoff_once_item_resolves(db_session):
+    from aomarket.db.models import AodbLookupBackoff
+
+    page_html = '<a class="item-name" href="/item/2">Notum Splitter</a>'
+    aodb = FakeAodbClient({})
+    service = await _make_service(db_session, pages={1: page_html}, aodb=aodb)
+    await service.settings.set("AutoTrackCount", 1)
+    await service.sync_top_traded_items()  # 404s, backoff recorded
+    assert await service.aodb_backoff.due_for_retry({2}) == set()
+
+    # Item now exists in the dump, and its cooldown has elapsed (forced
+    # directly, same as the repo-level cooldown test - the growth/cap
+    # schedule itself is covered separately there).
+    aodb._items[2] = _item(2, "Notum Splitter")
+    row = await db_session.get(AodbLookupBackoff, 2)
+    row.next_retry_at = datetime.now(UTC) - timedelta(seconds=1)
+    await db_session.commit()
+
+    result = await service.sync_top_traded_items()
+
+    assert result.resolved_count == 1
+    assert await db_session.get(AodbLookupBackoff, 2) is None
 
 
 @requires_postgres

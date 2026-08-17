@@ -127,6 +127,22 @@ class ApiKey(Base):
     last_used_at: Mapped[datetime | None] = mapped_column(TZ_TIMESTAMP)
 
 
+class AodbLookupBackoff(Base):
+    """Tracks aoids that 404'd against aodb-api, so repeated background
+    lookups (autotrack resync) can skip them until an exponentially
+    growing cooldown elapses, instead of re-requesting the same
+    permanently-missing item every cycle forever. Row is deleted as soon
+    as a lookup for that aoid succeeds - "missing" is a transient state,
+    not a permanent record."""
+
+    __tablename__ = "aodb_lookup_backoff"
+
+    aoid: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=False)
+    failure_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
+    last_attempted_at: Mapped[datetime] = mapped_column(TZ_TIMESTAMP, server_default=func.now(), nullable=False)
+    next_retry_at: Mapped[datetime] = mapped_column(TZ_TIMESTAMP, nullable=False)
+
+
 class Setting(Base):
     __tablename__ = "settings"
     __table_args__ = (CheckConstraint("value_type IN ('bool','int','float','str')", name="ck_settings_value_type"),)
