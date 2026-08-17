@@ -99,7 +99,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Scan image for vulnerabilities
+      # Two separate scans rather than one gating on `format: sarif` -- the
+      # sarif+exit-code combination in this trivy-action version fails the
+      # step spuriously even when the produced SARIF has zero results
+      # (confirmed live on docker.yml's PR-verification scan; see that
+      # file's identical comment). A gating table-format scan (unambiguous
+      # exit code) plus a separate non-gating sarif scan avoids it here too.
+      - name: Scan image for vulnerabilities (fails the release on CRITICAL/HIGH)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ghcr.io/zznathans/aomarket-bot@${{ steps.build.outputs.digest }}
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Generate SARIF for the Security tab (informational, non-gating)
+        if: always()
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ghcr.io/zznathans/aomarket-bot@${{ steps.build.outputs.digest }}
@@ -107,7 +123,7 @@ jobs:
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: "0"
 
       - name: Upload Trivy scan results to the Security tab
         uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
@@ -140,7 +156,17 @@ jobs:
           docker push "ghcr.io/zznathans/aomarket-bot:${VERSION}-slim"
           docker push "ghcr.io/zznathans/aomarket-bot:${MAJOR_MINOR}-slim"
 
-      - name: Scan slimmed image for vulnerabilities
+      - name: Scan slimmed image for vulnerabilities (fails the release on CRITICAL/HIGH)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ghcr.io/zznathans/aomarket-bot:${{ needs.release.outputs.version }}-slim
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Generate SARIF for the Security tab (informational, non-gating)
+        if: always()
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ghcr.io/zznathans/aomarket-bot:${{ needs.release.outputs.version }}-slim
@@ -148,7 +174,7 @@ jobs:
           output: trivy-results-slim.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: "0"
 
       - name: Upload Trivy scan results (slim image) to the Security tab
         uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
