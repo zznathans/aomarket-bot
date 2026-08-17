@@ -18,10 +18,14 @@ jobs:
       packages: write
     steps:
       # Mints a short-lived installation token for the aomarket-bot-release
-      # App instead of using secrets.GITHUB_TOKEN -- a release/tag created
-      # with the default token never fires other workflows' release:
-      # published listeners (GitHub's anti-recursion rule), which is
-      # exactly what chart-publish.yml needs to trigger. See
+      # App instead of using secrets.GITHUB_TOKEN. Two reasons this needs
+      # to not be the default token: (1) @semantic-release/git (see
+      # .releaserc.json) pushes a commit straight to main, which main's
+      # own ruleset would otherwise block from a non-bypass actor; (2) a
+      # release/tag created with the default token never fires other
+      # workflows' release:published listeners (GitHub's anti-recursion
+      # rule) -- relevant for any future release:published-triggered
+      # workflow. See
       # https://github.com/semantic-release/semantic-release/discussions/1906.
       - name: Generate a token for the release App
         id: app-token
@@ -59,6 +63,8 @@ jobs:
         with:
           semantic_version: 24
           extra_plugins: |
+            @semantic-release/exec
+            @semantic-release/git
             @semantic-release-plus/docker
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
