@@ -56,7 +56,27 @@ jobs:
           target: aomarket-bot:pr-${{ github.event.pull_request.number }}
           tag: "pr-${{ github.event.pull_request.number }}-slim"
 
-      - name: Scan image for vulnerabilities
+      # Two separate scans rather than one gating on `format: sarif`: the
+      # sarif+exit-code combination in this trivy-action version was
+      # observed to fail the step (nonzero outcome, no vulnerability table
+      # printed since SARIF doesn't write one to the log) even though a
+      # local `trivy image` run against the exact same built image, same
+      # severity/ignore-unfixed flags, exits 0 clean - confirmed live on
+      # this workflow's own first real PR run. A plain `format: table`
+      # scan's own exit code is unambiguous, so let it gate the job
+      # directly instead of trusting the sarif+exit-code combo (same fix
+      # already applied in aodb's equivalent workflow).
+      - name: Scan image for vulnerabilities (fails the build on CRITICAL)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: aomarket-bot:pr-${{ github.event.pull_request.number }}
+          format: table
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Generate SARIF for the Security tab (informational, non-gating)
+        if: always()
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: aomarket-bot:pr-${{ github.event.pull_request.number }}
@@ -64,7 +84,7 @@ jobs:
           output: trivy-results.sarif
           severity: CRITICAL
           ignore-unfixed: true
-          exit-code: "1"
+          exit-code: "0"
 
       # Pinned rather than left to auto-derive from the job name: without
       # this, codeql-action defaults the category to "<workflow file>:<job
