@@ -7,7 +7,7 @@ and metadata.
 ## Files
 
 - **`client.py`** — `AodbClient`, a thin `httpx`-based wrapper around the
-  aodb-api `/v2/items` endpoints. Handles the specifics of that API: bare
+  aodb-api `/api/items` endpoints. Handles the specifics of that API: bare
   JSON array responses (no envelope), pagination via the `X-Total-Count`
   response header, and a JSON body on a 404 miss rather than an empty
   array. `Item` is the frozen dataclass every lookup returns (`aoid`,
