@@ -13,7 +13,7 @@ aomarketBot:
     # -- also published (@semantic-release-plus/docker's default channel
     # -- tag behavior) but always points at whatever released most
     # -- recently, not a version you can pin a deployment to.
-    tag: "2.1.11"
+    tag: "2.1.12"
     # -- Only "regular" is currently published -- release.yml's pipeline
     # -- does not build a docker-slim variant. Setting this to "slim"
     # -- renders a deployment pointing at a "<tag>-slim" tag that does not
