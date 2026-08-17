@@ -4,6 +4,19 @@
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "sed -i \"s/^version:.*/version: ${nextRelease.version}/\" charts/aomarket-bot/Chart.yaml && sed -i \"s/^appVersion:.*/appVersion: \\\"${nextRelease.version}\\\"/\" charts/aomarket-bot/Chart.yaml && sed -i \"s/^    tag: .*/    tag: \\\"${nextRelease.version}\\\"/\" charts/aomarket-bot/values.yaml"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["charts/aomarket-bot/Chart.yaml", "charts/aomarket-bot/values.yaml"],
+        "message": "chore(release): update chart to ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ],
+    [
       "@semantic-release-plus/docker",
       {
         "name": "aomarket-bot:release",
