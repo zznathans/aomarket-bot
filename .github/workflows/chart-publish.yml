@@ -18,8 +18,8 @@ permissions:
   packages: write
 
 jobs:
-  publish:
-    name: Publish
+  publish-oci:
+    name: Publish (OCI)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -36,3 +36,36 @@ jobs:
           set -euo pipefail
           helm package charts/aomarket-bot -d /tmp/chart-out
           helm push /tmp/chart-out/aomarket-bot-*.tgz oci://ghcr.io/zznathans/aomarket-bot/charts
+
+  # Legacy publish path for tooling that doesn't speak OCI registries yet
+  # -- packages the chart and updates gh-pages' index.yaml (a classic Helm
+  # chart repo, `helm repo add`-able). Independent of publish-oci above;
+  # either one failing doesn't block the other. gh-pages has no branch
+  # protection (only main does), so the default GITHUB_TOKEN's contents:
+  # write permission is all this needs -- no App token required, unlike
+  # release.yml's push to main.
+  publish-gh-pages:
+    name: Publish (gh-pages)
+    runs-on: ubuntu-latest
+    # Reserved for a future pages.yml (docs site) to share, so the two
+    # never race pushing to gh-pages at the same time.
+    concurrency:
+      group: gh-pages-publish
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
+        with:
+          charts_dir: charts
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
