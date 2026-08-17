@@ -32,7 +32,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
 
+      # Pinned category - see docker.yml's Trivy upload step for why (a
+      # real bug found and fixed in aodb's equivalent this session).
       - name: Upload to code-scanning
         uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
         with:
           sarif_file: results.sarif
+          category: scorecard

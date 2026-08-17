@@ -66,8 +66,16 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
 
+      # Pinned rather than left to auto-derive from the job name: without
+      # this, codeql-action defaults the category to "<workflow file>:<job
+      # id>", and a future job rename would silently start a *new* alert
+      # stream - orphaning the old one's alerts as permanently "open"
+      # regardless of how stale they get. Found and fixed as a real,
+      # already-triggered bug in aodb's equivalent workflow; pinning here
+      # from the start avoids ever hitting it.
       - name: Upload Trivy scan results to the Security tab
         uses: github/codeql-action/upload-sarif@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
         if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: trivy-results.sarif
+          category: trivy-pr-verification

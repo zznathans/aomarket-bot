@@ -1,0 +1,32 @@
+suite: service
+templates:
+  - service.yaml
+tests:
+  - it: renders a single Service forwarding to the container port
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.ports[0].targetPort
+          value: 8000
+
+  - it: defaults to port 80
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 80
+
+  - it: honors a custom service port
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+      aomarketBot.service.port: 8080
+    asserts:
+      - equal:
+          path: spec.ports[0].port
+          value: 8080
