@@ -9,17 +9,16 @@ aomarketBot:
   image:
     # -- Container image registry and repository for the aomarket-bot image.
     repository: ghcr.io/zznathans/aomarket-bot
-    # -- Image tag to deploy. Always a real released semver -- the release
-    # -- pipeline never publishes a floating/latest tag.
+    # -- Image tag to deploy. Prefer a real released semver -- :latest is
+    # -- also published (@semantic-release-plus/docker's default channel
+    # -- tag behavior) but always points at whatever released most
+    # -- recently, not a version you can pin a deployment to.
     tag: "1.0.0"
-    # -- "regular" (default) or "slim". Every release publishes both: the
-    # -- regular image, and a docker-slim'd variant tagged "<tag>-slim".
-    # -- WARNING: the slim variant is built by dynamically analyzing the
-    # -- regular image's runtime behavior and stripping anything not
-    # -- observed -- it's smaller, but can be less stable if a
-    # -- rarely-exercised code path (an error branch, an optional
-    # -- dependency) needs something that got stripped out. Only switch to
-    # -- "slim" if you've specifically validated it for your workload.
+    # -- Only "regular" is currently published -- release.yml's pipeline
+    # -- does not build a docker-slim variant. Setting this to "slim"
+    # -- renders a deployment pointing at a "<tag>-slim" tag that does not
+    # -- exist. Left in place as a forward-compatible hook for if/when a
+    # -- slim variant is reintroduced.
     variant: "regular"
   # -- List of image pull secret names to attach to the ServiceAccount.
   # -- Leave empty if the registry is public (ghcr.io/zznathans/aomarket-bot
