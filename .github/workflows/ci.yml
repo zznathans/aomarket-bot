@@ -1,0 +1,79 @@
+name: CI
+
+# Runs on pushes to any branch except main (so work-in-progress branches get
+# feedback before a PR even exists) and on pull requests. Deliberately no
+# push[main]: nothing should ever land on main without having gone through
+# a PR that already ran these same checks, so re-running again on the
+# post-merge push would just re-verify code that already passed.
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      # Two steps rather than one `pip install -e ".[dev]"`: --require-hashes
+      # refuses to run at all if *any* requirement it's installing lacks a
+      # hash, and the local package itself (an editable install of this
+      # checkout, not a fetched artifact) has no meaningful hash to give it.
+      - run: pip install --require-hashes -r requirements-dev.txt
+      - run: pip install --no-deps -e .
+
+      - run: ruff check src tests
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: aomarket
+          POSTGRES_PASSWORD: aomarket
+          POSTGRES_DB: aomarket_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aomarket"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql+asyncpg://aomarket:aomarket@localhost:5432/aomarket_test
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - run: pip install --require-hashes -r requirements-dev.txt
+      - run: pip install --no-deps -e .
+
+      # Tests build their schema directly from the SQLAlchemy models
+      # (Base.metadata.create_all), bypassing Alembic entirely -- this step
+      # is the only thing in CI that would catch a model change that was
+      # never turned into a migration.
+      - name: Verify Alembic migration applies cleanly
+        env:
+          DATABASE_URL: postgresql+asyncpg://aomarket:aomarket@localhost:5432/aomarket_test
+        run: alembic upgrade head
+
+      - run: pytest -v
