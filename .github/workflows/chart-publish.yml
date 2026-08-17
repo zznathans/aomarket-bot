@@ -1,9 +1,13 @@
 name: Chart Publish
 
-# Fires on release:published, same as docker-publish.yml -- release.yml's
-# semantic-release step authenticates as the release App specifically so
-# the release it creates fires triggers like this one (see
-# docker-publish.yml's comment / the anti-recursion rule it links).
+# Fires on release:published. release.yml's semantic-release step
+# authenticates as the release App specifically so the release it
+# creates fires triggers like this one -- GitHub's anti-recursion rule
+# means an event created by the default GITHUB_TOKEN never would have.
+# See https://github.com/semantic-release/semantic-release/discussions/1906.
+# (Docker publishing no longer works this way -- it happens inline in
+# release.yml itself via the @semantic-release-plus/docker plugin, which
+# doesn't need a separate trigger at all.)
 on:
   release:
     types: [published]
