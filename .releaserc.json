@@ -13,7 +13,7 @@
       "@semantic-release/git",
       {
         "assets": ["charts/aomarket-bot/Chart.yaml", "charts/aomarket-bot/values.yaml"],
-        "message": "chore(release): update chart to ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        "message": "chore(release): update chart to ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],
     [
