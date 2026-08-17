@@ -1,0 +1,112 @@
+suite: deployment
+templates:
+  - deployment.yaml
+tests:
+  - it: renders a single deployment using the configured image
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+      aomarketBot.image.repository: ghcr.io/zznathans/aomarket-bot
+      aomarketBot.image.tag: "1.2.3"
+    asserts:
+      - hasDocuments:
+          count: 1
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/zznathans/aomarket-bot:1.2.3
+
+  - it: appends -slim to the image tag when variant is slim
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+      aomarketBot.image.repository: ghcr.io/zznathans/aomarket-bot
+      aomarketBot.image.tag: "1.2.3"
+      aomarketBot.image.variant: slim
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/zznathans/aomarket-bot:1.2.3-slim
+
+  - it: defaults to a single replica
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 1
+
+  - it: scales up via replicaCount
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+      aomarketBot.replicaCount: 3
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: runs as a non-root user with a hardened security context
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.runAsNonRoot
+          value: true
+      - equal:
+          path: spec.template.spec.containers[0].securityContext.capabilities.drop[0]
+          value: ALL
+
+  - it: DATABASE_URL comes from the chart-managed Secret when database.mode is url
+    set:
+      aomarketBot.secret.databaseUrl: postgresql+asyncpg://user:pass@host:5432/db
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-secret
+                key: database-url
+
+  - it: switches to DB_HOST/DB_NAME/DB_USER/DB_PASSWORD env vars when database.mode is parts
+    set:
+      aomarketBot.database.mode: parts
+      aomarketBot.database.host: pg.example.internal
+      aomarketBot.database.name: aomarket
+      aomarketBot.database.existingSecret: pg-operator-creds
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_HOST
+            value: pg.example.internal
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DB_NAME
+            value: aomarket
+
+  - it: fails when database.mode is parts and database.host is not set
+    set:
+      aomarketBot.database.mode: parts
+      aomarketBot.database.name: aomarket
+      aomarketBot.database.existingSecret: pg-operator-creds
+    asserts:
+      - failedTemplate:
+          errorMessage: "aomarketBot.database.host is required when database.mode is \"parts\""
+
+  - it: AO_PASSWORD always comes from the chart-managed Secret regardless of database.mode
+    set:
+      aomarketBot.database.mode: parts
+      aomarketBot.database.host: pg.example.internal
+      aomarketBot.database.name: aomarket
+      aomarketBot.database.existingSecret: pg-operator-creds
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: AO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: RELEASE-NAME-secret
+                key: ao-password

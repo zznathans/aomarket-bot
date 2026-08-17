@@ -1,17 +1,11 @@
 # aomarket-bot
 
-[![Lint](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json)](#python-version-support)
-[![Tests](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json)](#python-version-support)
-[![Docker](https://github.com/zznathans/aomarket-bot/actions/workflows/docker.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/docker.yml)
-[![Release](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml)
-[![Scorecard](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml)
-[![Upload Scorecard SARIF](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard-upload.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard-upload.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/zznathans/aomarket-bot/badge)](https://scorecard.dev/viewer/?uri=github.com/zznathans/aomarket-bot)
-[![CII Best Practices](https://www.bestpractices.dev/projects/13996/badge)](https://www.bestpractices.dev/projects/13996)
-[![Commit Lint](https://github.com/zznathans/aomarket-bot/actions/workflows/commitlint.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/commitlint.yml)
-[![Dependency review](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml)
-[![Pull Request Labeler](https://github.com/zznathans/aomarket-bot/actions/workflows/labeler.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/labeler.yml)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+| Category | Badges |
+|---|---|
+| CI | [![Lint](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/lint-3.14.json)](#python-version-support) [![Tests](https://img.shields.io/endpoint?url=https://marketbot.ao.yeetbox.net/badges/tests-3.14.json)](#python-version-support) [![Docker](https://github.com/zznathans/aomarket-bot/actions/workflows/docker.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/docker.yml) [![Chart CI](https://github.com/zznathans/aomarket-bot/actions/workflows/chart-ci.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/chart-ci.yml) |
+| Release | [![Release](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/release.yml) |
+| Security | [![Scorecard](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/scorecard.yml) [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/zznathans/aomarket-bot/badge)](https://scorecard.dev/viewer/?uri=github.com/zznathans/aomarket-bot) [![Dependency review](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml/badge.svg)](https://github.com/zznathans/aomarket-bot/actions/workflows/dependency-review.yml) [![CII Best Practices](https://www.bestpractices.dev/projects/13996/badge)](https://www.bestpractices.dev/projects/13996) |
+| License | [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE) |
 
 A standalone Anarchy Online market-tracking bot: an asyncio AO chat
 client for in-game `market`/`mkt` commands, a FastAPI control API for the
