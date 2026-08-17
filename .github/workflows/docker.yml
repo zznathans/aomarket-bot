@@ -4,11 +4,20 @@ name: Docker
 # happens from release.yml once that job exists. Same trigger/dedup shape
 # as ci.yml: push to any branch except main, and pull_request; the
 # check-pr job skips the push-triggered run once a PR is open on that
-# branch, since pull_request already covers the same commit.
+# branch, since pull_request already covers the same commit. Not a
+# required check, so (like dependency-review.yml) it's also safe to path
+# -filter to only what actually affects the built image.
 on:
   push:
     branches-ignore: [main]
+    paths: &docker-paths
+      - "Dockerfile"
+      - ".dockerignore"
+      - "src/**"
+      - "pyproject.toml"
+      - "requirements*.txt"
   pull_request:
+    paths: *docker-paths
 
 permissions:
   contents: read
