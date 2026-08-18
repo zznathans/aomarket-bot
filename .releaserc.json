@@ -1,5 +1,6 @@
 {
   "branches": ["main"],
+  "tagFormat": "${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
@@ -14,14 +15,6 @@
       {
         "assets": ["charts/aomarket-bot/Chart.yaml", "charts/aomarket-bot/values.yaml"],
         "message": "chore(release): update chart to ${nextRelease.version}\n\n${nextRelease.notes}"
-      }
-    ],
-    [
-      "@semantic-release-plus/docker",
-      {
-        "name": "aomarket-bot:release",
-        "registry": "ghcr.io/zznathans",
-        "skipLogin": true
       }
     ],
     "@semantic-release/github"
