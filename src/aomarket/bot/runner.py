@@ -127,11 +127,16 @@ class MarketBot:
         # available even if it doesn't match their display name this once.
         char_id = tell.sender_id
         player = self.chat_client.name_for_id(char_id) or str(char_id)
+        log.info("tell_received", player=player, char_id=char_id, message=tell.message)
 
         async with self.make_service() as service, self.make_auth_service() as auth:
             reply = await handle_admin_command(service, auth, player, tell.message)
             if reply is None:
                 reply = await handle_command(service, auth, player, tell.message)
+        # Logging reply length rather than content -- some replies (e.g.
+        # `market apikey generate`) carry a freshly minted secret token
+        # that must never land in logs.
+        log.info("tell_reply_sent", player=player, char_id=char_id, reply_length=len(reply))
         await self.chat_client.send_tell(char_id, reply)
 
     async def stop(self) -> None:
