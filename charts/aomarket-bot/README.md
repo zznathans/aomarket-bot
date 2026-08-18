@@ -1,6 +1,6 @@
 # aomarket-bot
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 2.2.0](https://img.shields.io/badge/Version-2.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.2.0](https://img.shields.io/badge/AppVersion-2.2.0-informational?style=flat-square)
 
 Helm chart for aomarket-bot
 
@@ -12,6 +12,7 @@ Helm chart for aomarket-bot
 | aomarketBot.ao.chatPort | int | `7105` | AO chat server port. |
 | aomarketBot.ao.chatServer | string | `"chat.d1.funcom.com"` | AO chat server hostname. |
 | aomarketBot.ao.login | string | `""` | an identifier, not a credential; only the password below is. |
+| aomarketBot.ao.ownerCharacter | string | `""` |  |
 | aomarketBot.aodbApiUrl | string | `"https://aodb.ao.yeetbox.net"` | Base URL for the aodb-api item-lookup service. |
 | aomarketBot.createSecret | bool | `true` | other app in this environment's ArgoCD setup. |
 | aomarketBot.database.existingSecret | string | `""` | one a Postgres operator generated) with username/password keys. |
@@ -28,8 +29,8 @@ Helm chart for aomarket-bot
 | aomarketBot.extraObjects | list | `[]` | Raw Kubernetes objects to render alongside chart-managed resources. |
 | aomarketBot.gmiApiUrl | string | `"https://gmi.nadybot.org"` | Base URL for the GMI live-order API. |
 | aomarketBot.image.repository | string | `"ghcr.io/zznathans/aomarket-bot"` | Container image registry and repository for the aomarket-bot image. |
-| aomarketBot.image.tag | string | `"1.0.0"` | pipeline never publishes a floating/latest tag. |
-| aomarketBot.image.variant | string | `"regular"` | "slim" if you've specifically validated it for your workload. |
+| aomarketBot.image.tag | string | `"2.2.0"` | recently, not a version you can pin a deployment to. |
+| aomarketBot.image.variant | string | `"regular"` | slim variant is reintroduced. |
 | aomarketBot.imagePullSecrets | list | `[]` | is public today). |
 | aomarketBot.logLevel | string | `"INFO"` | Log level (DEBUG/INFO/WARNING/ERROR). |
 | aomarketBot.replicaCount | int | `1` | credentials below are left blank (API-only mode, no chat session). |
