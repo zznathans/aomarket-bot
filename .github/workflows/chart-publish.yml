@@ -67,5 +67,12 @@ jobs:
         uses: helm/chart-releaser-action@cae68fefc6b5f367a0275617c9f83181ba54714f # v1.7.0
         with:
           charts_dir: charts
+          # A PR that itself touches charts/aomarket-bot/** (not just the
+          # version-bump commit) also matches this workflow's path filter,
+          # firing a premature run before that commit's version bump has
+          # landed -- chart-releaser would otherwise fail trying to
+          # recreate a release for the still-unbumped (already published)
+          # version. Skip rather than fail in that case.
+          skip_existing: true
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
