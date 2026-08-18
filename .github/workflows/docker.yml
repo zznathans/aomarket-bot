@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        uses: docker/login-action@af63523ba5f55733d817da0fdb813e660152c72c
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -42,14 +42,14 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        uses: docker/metadata-action@703896b4f30f62d53f5530a80bcdc589a3f702bc
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
 
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        uses: docker/build-push-action@2ca78c6bec76527009825f31aae0532b4d40d820
         with:
           context: .
           push: true
