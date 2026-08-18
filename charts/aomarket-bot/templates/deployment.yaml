@@ -31,6 +31,10 @@ spec:
               value: {{ .Values.aomarketBot.ao.chatServer | quote }}
             - name: AO_CHAT_PORT
               value: {{ .Values.aomarketBot.ao.chatPort | quote }}
+            {{- if .Values.aomarketBot.ao.ownerCharacter }}
+            - name: AO_OWNER_CHARACTER
+              value: {{ .Values.aomarketBot.ao.ownerCharacter | quote }}
+            {{- end }}
             - name: AODB_API_URL
               value: {{ .Values.aomarketBot.aodbApiUrl | quote }}
             - name: GMI_API_URL

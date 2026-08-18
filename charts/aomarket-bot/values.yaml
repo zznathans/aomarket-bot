@@ -49,6 +49,10 @@ aomarketBot:
     chatServer: "chat.d1.funcom.com"
     # -- AO chat server port.
     chatPort: 7105
+    # -- Player always treated as admin for in-game admin commands (e.g.
+    # -- `!settings`) and API key purposes, regardless of MarketUser.is_admin
+    # -- -- bootstraps the first admin. Leave blank to disable.
+    ownerCharacter: ""
 
   # -- Base URL for the aodb-api item-lookup service.
   aodbApiUrl: "https://aodb.ao.yeetbox.net"
