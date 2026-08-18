@@ -64,11 +64,17 @@ class AuthService:
         if key is None:
             return None
         await self.repo.touch_last_used(key.id)
-        is_admin = key.player == self.owner_character if self.owner_character else False
-        if not is_admin:
-            user = await self.market_repo.get_user(key.player)
-            is_admin = bool(user and user.is_admin)
+        is_admin = await self.is_admin_player(key.player)
         return ApiKeyPrincipal(player=key.player, is_admin=is_admin)
+
+    async def is_admin_player(self, player: str) -> bool:
+        """Admin check by player display name alone, no API key/token --
+        used by in-game admin commands, which only ever have a resolved
+        character name to go on."""
+        if self.owner_character and player == self.owner_character:
+            return True
+        user = await self.market_repo.get_user(player)
+        return bool(user and user.is_admin)
 
     def _hash(self, raw: str) -> str:
         # A constant (not per-key) salt/pepper is a deliberate simplification:

@@ -115,6 +115,7 @@ class MarketBot:
         log.info("market_bot_started", character=self.chat_client.character)
 
     async def _handle_tell(self, tell) -> None:
+        from aomarket.bot.admin_commands import handle_admin_command
         from aomarket.market.commands import handle_command
 
         # AOCP_MSG_PRIVATE only carries the sender's numeric character id, not
@@ -128,7 +129,9 @@ class MarketBot:
         player = self.chat_client.name_for_id(char_id) or str(char_id)
 
         async with self.make_service() as service, self.make_auth_service() as auth:
-            reply = await handle_command(service, auth, player, tell.message)
+            reply = await handle_admin_command(service, auth, player, tell.message)
+            if reply is None:
+                reply = await handle_command(service, auth, player, tell.message)
         await self.chat_client.send_tell(char_id, reply)
 
     async def stop(self) -> None:
