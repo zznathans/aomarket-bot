@@ -25,16 +25,8 @@ name: Kubesec
 # recent changes, to catch newly-disclosed issues even with nothing new to
 # scan (same rationale as scorecard.yml's schedule trigger).
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - 'charts/aomarket-bot/**'
   pull_request:
-    branches: ["main"]
-    paths:
-      - 'charts/aomarket-bot/**'
-  schedule:
-    - cron: '43 20 * * 2'
+
 
 # Least-privilege default; the scan job below grants itself only what it
 # actually needs.

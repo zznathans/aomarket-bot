@@ -9,52 +9,57 @@ name: Docker
 # required check, so (like dependency-review.yml) it's also safe to path
 # -filter to only what actually affects the built image.
 on:
-  push:
-    branches-ignore: [main]
-    paths: &docker-paths
-      - "Dockerfile"
-      - ".dockerignore"
-      - "src/**"
-      - "pyproject.toml"
-      - "requirements*.txt"
-  pull_request:
-    paths: *docker-paths
+  release:
+    types: [published]
 
-permissions:
-  contents: read
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 
 jobs:
-  check-pr:
-    name: Check for open PR
-    if: github.event_name == 'push'
+  build-and-push-image:
     runs-on: ubuntu-latest
+
+
     permissions:
-      pull-requests: read
-    outputs:
-      has_open_pr: ${{ steps.check.outputs.has_open_pr }}
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
     steps:
-      - id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          count=$(gh pr list --repo "${{ github.repository }}" --head "${{ github.ref_name }}" --state open --json number --jq 'length')
-          echo "has_open_pr=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
-  build:
-    name: Build
-    needs: check-pr
-    if: always() && (github.event_name == 'pull_request' || needs.check-pr.outputs.has_open_pr == 'false')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
-      - name: Build image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: .
-          push: false
-          tags: aomarket-bot:verify
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+
+      - name: Generate artifact attestation
+        uses: actions/attest@v4
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
