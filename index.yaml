@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   aomarket-bot:
   - apiVersion: v2
+    appVersion: 2.4.1
+    created: "2026-08-18T19:30:36.22936831Z"
+    description: Helm chart for aomarket-bot
+    digest: 4a61c0592e57ea3af8f7c081f70a2f62290cb34f5a73292c43865bbc707aecfc
+    name: aomarket-bot
+    type: application
+    urls:
+    - https://github.com/zznathans/aomarket-bot/releases/download/aomarket-bot-2.4.1/aomarket-bot-2.4.1.tgz
+    version: 2.4.1
+  - apiVersion: v2
     appVersion: 2.4.0
     created: "2026-08-18T19:24:16.911687103Z"
     description: Helm chart for aomarket-bot
@@ -181,4 +191,4 @@ entries:
     urls:
     - https://github.com/zznathans/aomarket-bot/releases/download/aomarket-bot-1.0.2/aomarket-bot-1.0.2.tgz
     version: 1.0.2
-generated: "2026-08-18T19:24:16.911985915Z"
+generated: "2026-08-18T19:30:36.229716983Z"
