@@ -16,14 +16,6 @@
         "message": "chore(release): update chart to ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],
-    [
-      "@semantic-release-plus/docker",
-      {
-        "name": "aomarket-bot:release",
-        "registry": "ghcr.io/zznathans",
-        "skipLogin": true
-      }
-    ],
     "@semantic-release/github"
   ]
 }
