@@ -70,6 +70,13 @@ def render_status_summary(summary: dict) -> str:
     )
 
 
+def render_settings_list(settings: dict) -> str:
+    if not settings:
+        return "No settings found."
+    lines = [f"{key} = {value!r}" for key, value in sorted(settings.items())]
+    return f"{len(settings)} setting(s):\n" + "\n".join(lines)
+
+
 def render_user_stats(player: str, stats: dict) -> str:
     lines = [
         f"Market activity: {player}",

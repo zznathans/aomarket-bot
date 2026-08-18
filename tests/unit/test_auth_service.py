@@ -128,3 +128,59 @@ async def test_list_keys_returns_players_keys(db_session):
 
     assert len(keys) == 1
     assert keys[0].player == "Alice"
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_is_admin_player_true_for_owner_character(db_session):
+    auth = _make_service(db_session, owner_character="Owner")
+
+    assert await auth.is_admin_player("Owner") is True
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_is_admin_player_true_for_market_user_flag(db_session):
+    auth = _make_service(db_session)
+    market_repo = MarketRepo(db_session)
+    await market_repo.register("Alice")
+    user = await market_repo.get_user("Alice")
+    user.is_admin = True
+    await db_session.commit()
+
+    assert await auth.is_admin_player("Alice") is True
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_is_admin_player_false_for_unknown_player(db_session):
+    auth = _make_service(db_session)
+
+    assert await auth.is_admin_player("Nobody") is False
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_authenticate_owner_character_still_admin_after_refactor(db_session):
+    auth = _make_service(db_session, owner_character="Owner")
+    raw = await auth.generate_key("Owner")
+
+    principal = await auth.authenticate(raw)
+
+    assert principal.is_admin is True
+
+
+@requires_postgres
+@pytest.mark.asyncio
+async def test_authenticate_market_user_flag_still_admin_after_refactor(db_session):
+    auth = _make_service(db_session)
+    market_repo = MarketRepo(db_session)
+    await market_repo.register("Alice")
+    user = await market_repo.get_user("Alice")
+    user.is_admin = True
+    await db_session.commit()
+
+    raw = await auth.generate_key("Alice")
+
+    principal = await auth.authenticate(raw)
+    assert principal.is_admin is True

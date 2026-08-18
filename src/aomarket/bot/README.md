@@ -17,6 +17,17 @@ loops (poll and auto-track) that keep watched items up to date.
   identity (`_handle_tell`) is resolved to their character name via
   `AOChatClient.name_for_id()` where possible, falling back to their
   numeric character id if the server hasn't pushed that mapping yet.
+- **`admin_commands.py`** — `handle_admin_command()`: the top-level
+  `!settings` command (list/get/set entries in the
+  [`Setting`](../db/README.md) table), admin-only via
+  `AuthService.is_admin_player()`. Deliberately separate from the
+  `market`/`mkt` namespace in [`market/commands.py`](../market/README.md)
+  and checked first in `_handle_tell`, so it never passes through that
+  module's `Enabled` gate — an admin locked out by a disabled Market
+  module can still recover it from in-game. Returns `None` (not a string)
+  for non-admins and unrecognized messages, so `_handle_tell` falls
+  through to the normal market dispatch with no indication the command
+  exists.
 - **`scheduler.py`** — `poll_loop()` and `autotrack_loop()`: plain
   `asyncio.sleep` loops (no persisted-timer table) that re-read their
   interval [`Setting`](../db/README.md) every cycle, so a setting change
