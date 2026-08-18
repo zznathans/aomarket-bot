@@ -9,41 +9,14 @@ name: Docker
 # required check, so (like dependency-review.yml) it's also safe to path
 # -filter to only what actually affects the built image.
 on:
-  push:
-    branches-ignore: [main]
-    paths: &docker-paths
-      - "Dockerfile"
-      - ".dockerignore"
-      - "src/**"
-      - "pyproject.toml"
-      - "requirements*.txt"
   pull_request:
-    paths: *docker-paths
 
 permissions:
   contents: read
 
 jobs:
-  check-pr:
-    name: Check for open PR
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
-    outputs:
-      has_open_pr: ${{ steps.check.outputs.has_open_pr }}
-    steps:
-      - id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          count=$(gh pr list --repo "${{ github.repository }}" --head "${{ github.ref_name }}" --state open --json number --jq 'length')
-          echo "has_open_pr=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
   build:
     name: Build
-    needs: check-pr
-    if: always() && (github.event_name == 'pull_request' || needs.check-pr.outputs.has_open_pr == 'false')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

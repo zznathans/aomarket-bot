@@ -6,8 +6,6 @@ name: CI
 # a PR that already ran these same checks, so re-running again on the
 # post-merge push would just re-verify code that already passed.
 on:
-  push:
-    branches-ignore: [main]
   pull_request:
 
 # check-pr below only guards *subsequent* pushes to a branch that already

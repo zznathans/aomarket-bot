@@ -7,10 +7,6 @@ name: Dependency Review
 # a dependency manifest actually changed.
 on:
   pull_request:
-    paths:
-      - "requirements*.txt"
-      - "pyproject.toml"
-      - "Dockerfile"
 
 permissions:
   contents: read
