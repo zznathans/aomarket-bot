@@ -7,7 +7,9 @@ name: CI
 # post-merge push would just re-verify code that already passed.
 on:
   pull_request:
-
+    paths:
+      - 'charts/**'
+      - 'src/aomarket/**'
 # check-pr below only guards *subsequent* pushes to a branch that already
 # has an open PR -- the very first push fires immediately, before the PR
 # exists yet to be detected, so opening the PR moments later still starts
